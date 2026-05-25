@@ -391,6 +391,94 @@
                 <strong>Important:</strong> Do not use Z-offset tools for this step. Use normal motion controls and align the nozzle to the selected edge of the print with paper-test clearance.
             </p>
 
+            <div class="lazarus-precision-controls" data-bind="visible: moonrakerMode">
+                <div class="lazarus-control-block">
+                    <div class="lazarus-control-head">
+                        <h4>X / Y Alignment</h4>
+                        <div class="lazarus-step-chooser">
+                            <button class="btn lazarus-chip"
+                                    type="button"
+                                    data-bind="click: function () { setXyJogStep(10); }, css: { 'is-active': xyJogStep() === 10 }">
+                                10 mm
+                            </button>
+                            <button class="btn lazarus-chip"
+                                    type="button"
+                                    data-bind="click: function () { setXyJogStep(1); }, css: { 'is-active': xyJogStep() === 1 }">
+                                1 mm
+                            </button>
+                            <button class="btn lazarus-chip"
+                                    type="button"
+                                    data-bind="click: function () { setXyJogStep(0.1); }, css: { 'is-active': xyJogStep() === 0.1 }">
+                                0.1 mm
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="lazarus-jog-grid">
+                        <button class="btn lazarus-function-btn"
+                                type="button"
+                                data-bind="click: function () { jogAxis('y', xyJogStep()); }">
+                            Y+
+                        </button>
+
+                        <div class="lazarus-jog-row">
+                            <button class="btn lazarus-function-btn"
+                                    type="button"
+                                    data-bind="click: function () { jogAxis('x', -xyJogStep()); }">
+                                X-
+                            </button>
+                            <button class="btn lazarus-function-btn"
+                                    type="button"
+                                    data-bind="click: function () { jogAxis('x', xyJogStep()); }">
+                                X+
+                            </button>
+                        </div>
+
+                        <button class="btn lazarus-function-btn"
+                                type="button"
+                                data-bind="click: function () { jogAxis('y', -xyJogStep()); }">
+                            Y-
+                        </button>
+                    </div>
+                </div>
+
+                <div class="lazarus-control-block">
+                    <div class="lazarus-control-head">
+                        <h4>Z Alignment</h4>
+                        <div class="lazarus-step-chooser">
+                            <button class="btn lazarus-chip"
+                                    type="button"
+                                    data-bind="click: function () { setZJogStep(1); }, css: { 'is-active': zJogStep() === 1 }">
+                                1 mm
+                            </button>
+                            <button class="btn lazarus-chip"
+                                    type="button"
+                                    data-bind="click: function () { setZJogStep(0.1); }, css: { 'is-active': zJogStep() === 0.1 }">
+                                0.1 mm
+                            </button>
+                            <button class="btn lazarus-chip"
+                                    type="button"
+                                    data-bind="click: function () { setZJogStep(0.05); }, css: { 'is-active': zJogStep() === 0.05 }">
+                                0.05 mm
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="lazarus-jog-row lazarus-jog-row-centered">
+                        <button class="btn lazarus-function-btn"
+                                type="button"
+                                data-bind="click: function () { jogAxis('z', zJogStep()); }">
+                            Z+
+                        </button>
+                        <button class="btn lazarus-function-btn"
+                                type="button"
+                                data-bind="click: function () { jogAxis('z', -zJogStep()); }">
+                            Z-
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div class="lazarus-failsafe-row">
                 <button class="btn lazarus-failsafe-btn"
                         type="button"

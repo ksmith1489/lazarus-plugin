@@ -111,6 +111,7 @@ class LazarusPlugin(
             safe_resume_homing=[],
             apply_assumed_position=[],
             goto_datum=["x", "y"],
+            jog_relative=["axis", "distance"],
             reset_alignment_z=[],
             lock_datum=["x", "y", "z"],
             execute_resume=[],
@@ -349,6 +350,28 @@ class LazarusPlugin(
             self._send_gcode_commands(commands)
             return dict(ok=True)
 
+        if command == "jog_relative":
+            axis = str(data.get("axis") or "").strip().lower()
+            if axis not in ("x", "y", "z"):
+                return dict(ok=False, error="Invalid jog axis")
+
+            distance = float(data.get("distance"))
+            if distance == 0:
+                return dict(ok=False, error="Jog distance must be non-zero")
+
+            feedrate = 600 if axis == "z" else 1200
+            commands = [
+                "G91",
+                "G0 {axis}{distance} F{feedrate}".format(
+                    axis=axis.upper(),
+                    distance=self._format_gcode_value(distance),
+                    feedrate=feedrate,
+                ),
+                "G90",
+            ]
+            self._send_gcode_commands(commands)
+            return dict(ok=True)
+
         if command == "reset_alignment_z":
             if self._uses_klipper_commands():
                 commands = ["SET_KINEMATIC_POSITION Z=200 SET_HOMED=Z"]
@@ -557,6 +580,7 @@ class LazarusPlugin(
             "safe_resume_homing",
             "apply_assumed_position",
             "goto_datum",
+            "jog_relative",
             "reset_alignment_z",
             "lock_datum",
             "execute_resume",
@@ -1334,11 +1358,10 @@ class LazarusPlugin(
             lazarus=dict(
                 displayName=PRODUCT_NAME,
                 displayVersion=self._plugin_version,
-                type="github_commit",
+                type="github_release",
+                current=self._plugin_version,
                 user="ksmith1489",
                 repo="lazarus-plugin",
-                branch="main",
-                current=self._plugin_version,
                 pip="https://github.com/ksmith1489/lazarus-plugin/archive/{target}.zip",
             )
         )

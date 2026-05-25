@@ -18,6 +18,8 @@ $(function () {
         self.installId = ko.observable("");
         self.measuredHeight = ko.observable("");
         self.alignmentSide = ko.observable("left");
+        self.xyJogStep = ko.observable(1);
+        self.zJogStep = ko.observable(0.1);
         self.controlMode = ko.observable("octoprint");
         self.moonrakerMode = ko.observable(false);
         self.moonrakerModeLabel = ko.computed(function () {
@@ -638,6 +640,29 @@ $(function () {
 
         self.toggleControlMode = function () {
             self.setControlMode(self.moonrakerMode() ? "octoprint" : "moonraker");
+        };
+
+        self.setXyJogStep = function (step) {
+            self.xyJogStep(step);
+        };
+
+        self.setZJogStep = function (step) {
+            self.zJogStep(step);
+        };
+
+        self.jogAxis = function (axis, distance) {
+            api("jog_relative", {
+                axis: axis,
+                distance: distance
+            })
+                .done(function (resp) {
+                    if (!resp || resp.ok !== true) {
+                        notify("Jog", resp && resp.error ? resp.error : "Jog command failed", "error");
+                    }
+                })
+                .fail(function (xhr) {
+                    notify("Jog", getAjaxErrorMessage(xhr, "Jog command failed"), "error");
+                });
         };
 
         self.testMoonraker = function () {

@@ -367,7 +367,8 @@
 }
 
 .lazarus-standard-option,
-.lazarus-calibrated-action {
+.lazarus-calibrated-action,
+.lazarus-control-block {
     background: #f6f8fb;
     background-color: #f6f8fb;
     border: 1px solid #d7dee7;
@@ -375,6 +376,57 @@
     display: grid;
     gap: 12px;
     padding: 16px;
+}
+
+.lazarus-precision-controls {
+    display: grid;
+    gap: 14px;
+    margin: 0 0 14px;
+}
+
+.lazarus-control-head {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+.lazarus-control-head h4 {
+    margin: 0;
+}
+
+.lazarus-step-chooser,
+.lazarus-jog-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.lazarus-chip {
+    background: #ffffff;
+    border: 1px solid #d7dee7;
+    border-radius: 999px;
+    font-weight: 700;
+    min-height: 34px;
+}
+
+.lazarus-chip.is-active {
+    background: #205493;
+    background-color: #205493;
+    border-color: #205493;
+    color: #ffffff;
+    text-shadow: none;
+}
+
+.lazarus-jog-grid {
+    display: grid;
+    gap: 10px;
+    justify-items: center;
+}
+
+.lazarus-jog-row-centered {
+    justify-content: center;
 }
 
 .lazarus-disclaimer,
