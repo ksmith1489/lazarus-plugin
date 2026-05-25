@@ -26,7 +26,7 @@ Failed Print Resume Wizard is installable now and is currently under review for 
 Until that listing is approved, it can be installed from URL in OctoPrint's Plugin Manager:
 
 ```text
-https://github.com/ksmith1489/lazarus-plugin/archive/refs/heads/main.zip
+https://github.com/ksmith1489/lazarus-plugin/archive/refs/tags/v1.0.0.zip
 ```
 
 ## Source

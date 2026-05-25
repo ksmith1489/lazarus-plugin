@@ -12,7 +12,7 @@ date: 2026-05-09
 
 homepage: https://wizard.lazarus3dprint.com
 source: https://github.com/ksmith1489/lazarus-plugin
-archive: https://github.com/ksmith1489/lazarus-plugin/archive/refs/heads/main.zip
+archive: https://github.com/ksmith1489/lazarus-plugin/archive/refs/tags/v1.0.0.zip
 
 privacypolicy: https://wizard.lazarus3dprint.com/privacy
 

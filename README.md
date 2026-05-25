@@ -1,4 +1,4 @@
-# Failed Print Resume Wizard
+﻿# Failed Print Resume Wizard
 
 Failed Print Resume Wizard helps recover failed 3D prints when the partial print is still attached to the bed.
 
@@ -15,7 +15,7 @@ In OctoPrint:
 5. Paste this URL:
 
 ```text
-https://github.com/ksmith1489/lazarus-plugin/archive/refs/heads/main.zip
+https://github.com/ksmith1489/lazarus-plugin/archive/refs/tags/v1.0.0.zip
 ```
 
 6. Install and restart OctoPrint when prompted

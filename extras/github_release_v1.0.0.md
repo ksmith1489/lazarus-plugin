@@ -16,7 +16,7 @@ Failed Print Resume Wizard helps recover failed 3D prints when the partial print
 Install directly from OctoPrint's Plugin Manager using:
 
 ```text
-https://github.com/ksmith1489/lazarus-plugin/archive/refs/heads/main.zip
+https://github.com/ksmith1489/lazarus-plugin/archive/refs/tags/v1.0.0.zip
 ```
 
 In OctoPrint:
