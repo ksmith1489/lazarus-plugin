@@ -18,6 +18,9 @@ from .resume_engine import build_resumed_gcode
 
 
 MONTH_SECONDS = 30 * 24 * 60 * 60
+PRODUCT_NAME = "Failed Print Resume Wizard"
+DEFAULT_ENGINE_URL = "https://wizard.lazarus3dprint.com"
+LEGACY_ENGINE_URL = "https://app." + "lazarus3dprint.com"
 LEGACY_PLUGIN_ID = "octogoat"
 INSTALL_ID_FILENAME = "install_id.json"
 # Legacy markers from earlier builds, kept only so startup can remove stale managed script blocks.
@@ -45,7 +48,9 @@ class LazarusPlugin(
     def get_settings_defaults(self):
         return dict(
             install_id=str(uuid.uuid4()),
-            engine_url="https://app.lazarus3dprint.com",
+            engine_url=DEFAULT_ENGINE_URL,
+            license_email="",
+            license_key="",
             firmware_type="klipper",
             park_x="",
             park_y="",
@@ -63,7 +68,7 @@ class LazarusPlugin(
         )
 
     def get_settings_restricted_paths(self):
-        return dict(admin=[["api_key"], ["moonraker_api_key"]])
+        return dict(admin=[["api_key"], ["moonraker_api_key"], ["license_key"]])
 
     def is_api_protected(self):
         return True
@@ -75,13 +80,13 @@ class LazarusPlugin(
         return [
             dict(
                 type="tab",
-                name="Lazarus",
+                name=PRODUCT_NAME,
                 template="lazarus_tab.jinja2",
                 custom_bindings=True,
             ),
             dict(
                 type="settings",
-                name="Lazarus",
+                name=PRODUCT_NAME,
                 template="lazarus_settings.jinja2",
                 custom_bindings=False,
             ),
@@ -97,6 +102,9 @@ class LazarusPlugin(
         return dict(
             status=[],
             validate=[],
+            activate_license=["email", "license_key"],
+            recover_license_key=["email"],
+            deactivate_device=["email", "license_key"],
             set_control_mode=["control_mode"],
             test_moonraker=[],
             build_resume=["measured_height"],
@@ -119,7 +127,7 @@ class LazarusPlugin(
         except Exception as e:
             self._logger.error("Legacy startup cleanup failed: %s" % e)
 
-        self._logger.info("Lazarus plugin active")
+        self._logger.info("%s plugin active", PRODUCT_NAME)
 
     def on_api_get(self, request):
         if request.args.get("download_resume") != "1":
@@ -141,7 +149,7 @@ class LazarusPlugin(
             response.status_code = 404
             return response
 
-        filename = getattr(self, "_resume_filename", "lazarus_resume.gcode")
+        filename = getattr(self, "_resume_filename", "resume.gcode")
         response = flask.make_response(self._resume_cache)
         response.headers["Content-Type"] = "text/plain; charset=utf-8"
         response.headers["Content-Disposition"] = 'attachment; filename="{filename}"'.format(
@@ -158,7 +166,7 @@ class LazarusPlugin(
                 return permission_error
             return self._handle_api_command(command, data)
         except Exception as e:
-            self._logger.exception("Lazarus API command failed: %s", command)
+            self._logger.exception("%s API command failed: %s", PRODUCT_NAME, command)
             return dict(ok=False, error=str(e))
 
     def _handle_api_command(self, command, data):
@@ -213,8 +221,20 @@ class LazarusPlugin(
                 valid=status["valid"],
                 source=status.get("source"),
                 expires_at=status.get("expires_at"),
+                license_model=status.get("license_model"),
+                device_count=status.get("device_count"),
+                max_devices=status.get("max_devices"),
                 activation_url=self._build_activation_url(),
             )
+
+        if command == "activate_license":
+            return self._activate_license_device(data)
+
+        if command == "recover_license_key":
+            return self._recover_license_key(data)
+
+        if command == "deactivate_device":
+            return self._deactivate_license_device(data)
 
         if command == "build_resume":
             license_error = self._require_valid_license_for_output()
@@ -453,7 +473,7 @@ class LazarusPlugin(
     def _get_moonraker_base_url(self):
         base_url = str(self._settings.get(["moonraker_url"]) or "").strip()
         if not base_url:
-            raise ValueError("Moonraker URL missing. Add it in Lazarus settings.")
+            raise ValueError("Moonraker URL missing. Add it in Failed Print Resume Wizard settings.")
 
         if "://" not in base_url:
             base_url = "http://" + base_url
@@ -463,7 +483,7 @@ class LazarusPlugin(
         try:
             parsed_port = parsed.port
         except ValueError:
-            raise ValueError("Moonraker URL has an invalid port. Check the URL in Lazarus settings.")
+            raise ValueError("Moonraker URL has an invalid port. Check the URL in Failed Print Resume Wizard settings.")
 
         if parsed_port is None and normalized_path in ("", "/"):
             hostname = parsed.hostname or ""
@@ -484,10 +504,14 @@ class LazarusPlugin(
 
         return urlunparse(parsed).rstrip("/")
 
-    def _build_activation_url(self):
+    def _get_engine_url(self):
         engine_url = str(self._settings.get(["engine_url"]) or "").strip().rstrip("/")
-        if not engine_url:
-            engine_url = "https://app.lazarus3dprint.com"
+        if not engine_url or engine_url == LEGACY_ENGINE_URL:
+            return DEFAULT_ENGINE_URL
+        return engine_url
+
+    def _build_activation_url(self):
+        engine_url = self._get_engine_url()
 
         install_id = self._get_install_id()
         if install_id:
@@ -513,13 +537,19 @@ class LazarusPlugin(
         if command == "status":
             return self._require_permission(
                 Permissions.STATUS,
-                "Viewing Lazarus status requires OctoPrint's Status permission.",
+                "Viewing Failed Print Resume Wizard status requires OctoPrint's Status permission.",
             )
 
-        if command in ("set_control_mode", "test_moonraker"):
+        if command in (
+            "set_control_mode",
+            "test_moonraker",
+            "activate_license",
+            "recover_license_key",
+            "deactivate_device",
+        ):
             return self._require_permission(
                 Permissions.SETTINGS,
-                "This Lazarus action requires OctoPrint's Settings Admin permission.",
+                "This Failed Print Resume Wizard action requires OctoPrint's Settings Admin permission.",
             )
 
         if command in (
@@ -533,7 +563,7 @@ class LazarusPlugin(
         ):
             return self._require_permission(
                 Permissions.CONTROL,
-                "This Lazarus action requires OctoPrint's Control permission.",
+                "This Failed Print Resume Wizard action requires OctoPrint's Control permission.",
             )
 
         return None
@@ -614,7 +644,7 @@ class LazarusPlugin(
         if changed:
             self._settings.save()
 
-        self._logger.info("Lazarus install ID ready from %s", source)
+        self._logger.info("%s install ID ready from %s", PRODUCT_NAME, source)
         return install_id
 
     def _load_license_cache(self):
@@ -660,9 +690,196 @@ class LazarusPlugin(
                 source="cache",
                 validated_at=validated_at,
                 expires_at=expires_at,
+                license_model=cache.get("license_model"),
+                device_count=cache.get("device_count"),
+                max_devices=cache.get("max_devices"),
             )
 
         return dict(valid=False, source="cache")
+
+    def _license_status_from_payload(self, payload, now=None, source="remote"):
+        if now is None:
+            now = int(time.time())
+
+        install_id = self._get_install_id()
+        expires_at = now + MONTH_SECONDS
+        device_count = payload.get("device_count") if isinstance(payload, dict) else None
+        max_devices = payload.get("max_devices") if isinstance(payload, dict) else None
+        license_model = payload.get("license_model") if isinstance(payload, dict) else None
+
+        self._save_license_cache(
+            dict(
+                install_id=install_id,
+                validated_at=now,
+                expires_at=expires_at,
+                license_model=license_model,
+                device_count=device_count,
+                max_devices=max_devices,
+            )
+        )
+        return dict(
+            valid=True,
+            source=source,
+            validated_at=now,
+            expires_at=expires_at,
+            license_model=license_model,
+            device_count=device_count,
+            max_devices=max_devices,
+        )
+
+    def _save_license_credentials(self, email=None, license_key=None):
+        changed = False
+        email = str(email or "").strip()
+        license_key = str(license_key or "").strip()
+
+        if email and str(self._settings.get(["license_email"]) or "").strip() != email:
+            self._settings.set(["license_email"], email)
+            changed = True
+
+        if license_key and str(self._settings.get(["license_key"]) or "").strip() != license_key:
+            self._settings.set(["license_key"], license_key)
+            changed = True
+
+        if changed:
+            self._settings.save()
+
+    def _license_request_error(self, response, fallback):
+        try:
+            payload = response.json()
+        except ValueError:
+            return fallback
+
+        if isinstance(payload, dict):
+            return payload.get("error") or fallback
+        return fallback
+
+    def _license_device_label(self):
+        try:
+            printer_profile = self._printer_profile_manager.get_current_or_default()
+            name = printer_profile.get("name") if isinstance(printer_profile, dict) else ""
+        except Exception:
+            name = ""
+
+        if name:
+            return "OctoPrint plugin - {name}".format(name=name)
+        return "OctoPrint plugin"
+
+    def _activate_license_device(self, data):
+        email = str(data.get("email") or self._settings.get(["license_email"]) or "").strip()
+        license_key = str(data.get("license_key") or self._settings.get(["license_key"]) or "").strip()
+        install_id = self._get_install_id()
+
+        if not email or not license_key:
+            return dict(ok=False, valid=False, error="Enter the checkout email and license key first.")
+
+        if not install_id:
+            return dict(ok=False, valid=False, error="Install ID is missing. Re-save plugin settings and try again.")
+
+        payload = dict(
+            email=email,
+            license_key=license_key,
+            install_id=install_id,
+            device_type="octoprint",
+            device_label=self._license_device_label(),
+        )
+        url = "{engine_url}/activate-device".format(engine_url=self._get_engine_url())
+
+        try:
+            response = requests.post(url, json=payload, timeout=10)
+        except requests.exceptions.RequestException:
+            return dict(ok=False, valid=False, error="Could not reach the license service. Check internet access and try again.")
+
+        if response.status_code != 200:
+            self._clear_license_cache()
+            return dict(ok=False, valid=False, error=self._license_request_error(response, "Activation failed."))
+
+        try:
+            response_payload = response.json()
+        except ValueError:
+            self._clear_license_cache()
+            return dict(ok=False, valid=False, error="Activation service returned an unreadable response.")
+
+        if response_payload.get("valid") is not True:
+            self._clear_license_cache()
+            return dict(ok=False, valid=False, error=response_payload.get("error") or "Activation failed.")
+
+        self._save_license_credentials(email=email, license_key=license_key)
+        status = self._license_status_from_payload(response_payload)
+        status.update(ok=True, activation_url=self._build_activation_url())
+        return status
+
+    def _recover_license_key(self, data):
+        email = str(data.get("email") or self._settings.get(["license_email"]) or "").strip()
+        install_id = self._get_install_id()
+
+        if not email:
+            return dict(ok=False, valid=False, error="Enter the checkout email first.")
+
+        if not install_id:
+            return dict(ok=False, valid=False, error="Install ID is missing. Re-save plugin settings and try again.")
+
+        url = "{engine_url}/license-key".format(engine_url=self._get_engine_url())
+        try:
+            response = requests.post(url, json=dict(email=email, install_id=install_id), timeout=10)
+        except requests.exceptions.RequestException:
+            return dict(ok=False, valid=False, error="Could not reach the license service. Check internet access and try again.")
+
+        if response.status_code != 200:
+            return dict(ok=False, valid=False, error=self._license_request_error(response, "License key lookup failed."))
+
+        try:
+            payload = response.json()
+        except ValueError:
+            return dict(ok=False, valid=False, error="License service returned an unreadable response.")
+
+        license_key = str(payload.get("license_key") or "").strip()
+        if payload.get("valid") is not True or not license_key:
+            return dict(ok=False, valid=False, error=payload.get("error") or "License key lookup failed.")
+
+        self._save_license_credentials(email=email, license_key=license_key)
+        status = self._license_status_from_payload(
+            dict(
+                license_model="v2",
+                device_count=payload.get("device_count"),
+                max_devices=payload.get("max_devices"),
+            )
+        )
+        status.update(ok=True, license_key=license_key, activation_url=self._build_activation_url())
+        return status
+
+    def _deactivate_license_device(self, data):
+        email = str(data.get("email") or self._settings.get(["license_email"]) or "").strip()
+        license_key = str(data.get("license_key") or self._settings.get(["license_key"]) or "").strip()
+        install_id = self._get_install_id()
+
+        if not email or not license_key:
+            return dict(ok=False, error="Enter the checkout email and license key first.")
+
+        url = "{engine_url}/deactivate-device".format(engine_url=self._get_engine_url())
+        payload = dict(email=email, license_key=license_key, install_id=install_id)
+
+        try:
+            response = requests.post(url, json=payload, timeout=10)
+        except requests.exceptions.RequestException:
+            return dict(ok=False, error="Could not reach the license service. Check internet access and try again.")
+
+        if response.status_code != 200:
+            return dict(ok=False, error=self._license_request_error(response, "Device deactivation failed."))
+
+        try:
+            response_payload = response.json()
+        except ValueError:
+            return dict(ok=False, error="License service returned an unreadable response.")
+
+        if response_payload.get("ok") is not True:
+            return dict(ok=False, error=response_payload.get("error") or "Device deactivation failed.")
+
+        self._clear_license_cache()
+        return dict(
+            ok=True,
+            device_count=response_payload.get("device_count"),
+            max_devices=response_payload.get("max_devices"),
+        )
 
     def _get_license_status(self):
         now = int(time.time())
@@ -676,10 +893,10 @@ class LazarusPlugin(
             return dict(
                 valid=False,
                 source="local",
-                error="Lazarus install ID is missing. Re-save the plugin settings and try again.",
+                error="Failed Print Resume Wizard install ID is missing. Re-save the plugin settings and try again.",
             )
 
-        engine_url = (self._settings.get(["engine_url"]) or "").rstrip("/")
+        engine_url = self._get_engine_url()
         validate_url = "{engine_url}/validate".format(engine_url=engine_url)
 
         try:
@@ -692,7 +909,7 @@ class LazarusPlugin(
             return dict(
                 valid=False,
                 source="remote",
-                error="Lazarus could not reach the license service. Connect to the internet and try again.",
+                error="Failed Print Resume Wizard could not reach the license service. Connect to the internet and try again.",
             )
 
         if response.status_code != 200:
@@ -709,20 +926,7 @@ class LazarusPlugin(
             self._clear_license_cache()
             return dict(valid=False, source="remote")
 
-        expires_at = now + MONTH_SECONDS
-        self._save_license_cache(
-            dict(
-                install_id=install_id,
-                validated_at=now,
-                expires_at=expires_at,
-            )
-        )
-        return dict(
-            valid=True,
-            source="remote",
-            validated_at=now,
-            expires_at=expires_at,
-        )
+        return self._license_status_from_payload(payload, now=now, source="remote")
 
     def _require_valid_license_for_output(self):
         status = self._get_license_status()
@@ -731,7 +935,7 @@ class LazarusPlugin(
 
         return self._error_response(
             status.get("error")
-            or "An active Lazarus subscription is required before generating or using resume output.",
+            or "An active Failed Print Resume Wizard subscription is required before generating or using resume output.",
             status_code=402,
             activation_url=self._build_activation_url(),
         )
@@ -794,7 +998,7 @@ class LazarusPlugin(
         self._logger.debug("Moonraker response: %s %s", response.status_code, path)
 
         if response.status_code in (401, 403):
-            raise ValueError("Moonraker authentication failed. Check the API key in Lazarus settings.")
+            raise ValueError("Moonraker authentication failed. Check the API key in Failed Print Resume Wizard settings.")
         if response.status_code >= 400:
             raise ValueError(self._extract_moonraker_error(response, payload))
 
@@ -870,7 +1074,7 @@ class LazarusPlugin(
         if not resume_text:
             return dict(ok=False, error="No resume built")
 
-        filename = getattr(self, "_resume_filename", "lazarus_resume.gcode")
+        filename = getattr(self, "_resume_filename", "resume.gcode")
         upload_and_print = self._get_bool_setting(["moonraker_upload_and_print"], False)
         if upload_and_print:
             self._moonraker_require_klippy_connected()
@@ -975,11 +1179,11 @@ class LazarusPlugin(
             raise ValueError("File read failed: %s" % e)
 
     def _build_resume_filename(self, source):
-        source_name = (source or {}).get("name") or "lazarus_resume"
+        source_name = (source or {}).get("name") or "resume"
         stem, _extension = os.path.splitext(source_name)
         cleaned = re.sub(r"[^A-Za-z0-9._-]+", "_", stem).strip("._")
         if not cleaned:
-            cleaned = "lazarus_resume"
+            cleaned = "resume"
         return cleaned + "_resume.gcode"
 
     def _get_printer_zmax(self):
@@ -1128,7 +1332,7 @@ class LazarusPlugin(
     def get_update_information(self):
         return dict(
             lazarus=dict(
-                displayName="Lazarus",
+                displayName=PRODUCT_NAME,
                 displayVersion=self._plugin_version,
                 type="github_commit",
                 user="ksmith1489",
@@ -1140,8 +1344,8 @@ class LazarusPlugin(
         )
 
 
-__plugin_name__ = "Lazarus"
-__plugin_privacypolicy__ = "https://app.lazarus3dprint.com/privacy"
+__plugin_name__ = PRODUCT_NAME
+__plugin_privacypolicy__ = DEFAULT_ENGINE_URL + "/privacy"
 __plugin_pythoncompat__ = ">=3.7,<4"
 
 

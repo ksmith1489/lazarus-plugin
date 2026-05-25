@@ -1,7 +1,7 @@
 <form class="form-horizontal lazarus-settings-form">
-  <h3>Lazarus Settings</h3>
+  <h3>Failed Print Resume Wizard Settings</h3>
   <p class="lazarus-settings-intro">
-    Configure printer behavior, licensing, and optional Moonraker connectivity for Lazarus.
+    Configure printer behavior, licensing, and optional Moonraker connectivity for Failed Print Resume Wizard.
   </p>
 
   <div class="control-group">
@@ -27,7 +27,33 @@
              readonly
              data-bind="value: settings.plugins.lazarus.install_id">
       <p class="help-block">
-        This install ID is stored locally in OctoPrint and is used when linking Lazarus activation to this printer.
+        This install ID is stored locally in OctoPrint and is used when linking activation to this printer.
+      </p>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="settings_plugin_lazarus_license_email">Checkout Email</label>
+    <div class="controls">
+      <input id="settings_plugin_lazarus_license_email"
+             type="email"
+             class="input-block-level"
+             data-bind="value: settings.plugins.lazarus.license_email">
+      <p class="help-block">
+        Email used at Stripe checkout. You can also enter this on the main plugin tab.
+      </p>
+    </div>
+  </div>
+
+  <div class="control-group">
+    <label class="control-label" for="settings_plugin_lazarus_license_key">License Key</label>
+    <div class="controls">
+      <input id="settings_plugin_lazarus_license_key"
+             type="text"
+             class="input-block-level"
+             data-bind="value: settings.plugins.lazarus.license_key">
+      <p class="help-block">
+        Used for License v2 device activation. Old install-ID validation continues to work for existing installs.
       </p>
     </div>
   </div>
@@ -108,7 +134,7 @@
              class="input-block-level"
              data-bind="value: settings.plugins.lazarus.z_max_override_mm">
       <p class="help-block">
-        Optional fallback if Lazarus cannot detect your machine's Z maximum from Moonraker or the OctoPrint printer profile.
+        Optional fallback if Failed Print Resume Wizard cannot detect your machine's Z maximum from Moonraker or the OctoPrint printer profile.
       </p>
     </div>
   </div>
@@ -126,7 +152,7 @@
              placeholder="http://printer.local:7125"
              data-bind="value: settings.plugins.lazarus.moonraker_url">
       <p class="help-block">
-        Base URL for Moonraker. Toggle Moonraker mode from the Lazarus tab.
+        Base URL for Moonraker. Toggle Moonraker mode from the Failed Print Resume Wizard tab.
       </p>
     </div>
   </div>

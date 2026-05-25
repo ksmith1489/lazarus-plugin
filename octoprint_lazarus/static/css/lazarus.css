@@ -30,19 +30,38 @@
 .lazarus-hero {
     margin-bottom: 16px;
     padding: 20px;
+    text-align: center;
 }
 
 .lazarus-title {
     margin: 0;
-    font-size: 30px;
+    color: #1f2933;
+    font-size: 38px;
+    font-weight: 900;
+    letter-spacing: 0;
     line-height: 1.1;
+    text-transform: uppercase;
+    text-shadow:
+        1px 1px 0 #f39a4a,
+        2px 2px 0 #9c4d16,
+        4px 6px 14px rgba(31, 41, 51, 0.22);
+}
+
+.lazarus-slogan {
+    color: #9c4d16;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.25;
+    margin: 10px 0 0;
 }
 
 .lazarus-tagline {
     margin: 8px 0 0;
-    max-width: 760px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
     color: var(--lazarus-muted);
-    font-size: 15px;
+    font-size: 13px;
     line-height: 1.5;
 }
 
@@ -51,7 +70,8 @@
     display: flex;
     gap: 12px;
     justify-content: space-between;
-    margin-top: 18px;
+    margin: 0 0 16px;
+    text-align: left;
 }
 
 .lazarus-nav-left,
@@ -184,16 +204,43 @@
 .lazarus-file-selected,
 .lazarus-datum-display,
 .lazarus-preview,
-.lazarus-warning-box {
+.lazarus-warning-box,
+.lazarus-license-status {
     background: var(--lazarus-panel-alt);
     border: 1px solid var(--lazarus-border);
     border-radius: 10px;
 }
 
 .lazarus-file-selected,
-.lazarus-datum-display {
+.lazarus-datum-display,
+.lazarus-license-status {
     margin-bottom: 12px;
     padding: 12px 14px;
+}
+
+.lazarus-license-card h4 {
+    margin-bottom: 0;
+}
+
+.lazarus-license-status {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.lazarus-license-grid {
+    margin-bottom: 14px;
+}
+
+.lazarus-license-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.lazarus-license-actions .btn {
+    flex: 1 1 180px;
 }
 
 .lazarus-file-selector-controls select {
@@ -229,6 +276,7 @@
 .lazarus-input,
 .lazarus-ui select,
 .lazarus-ui input[type="number"],
+.lazarus-ui input[type="email"],
 .lazarus-ui input[type="text"] {
     border: 1px solid var(--lazarus-border);
     border-radius: 8px;
@@ -387,6 +435,7 @@
 
 #settings_plugin_lazarus .controls input[type="text"],
 #settings_plugin_lazarus .controls input[type="password"],
+#settings_plugin_lazarus .controls input[type="email"],
 #settings_plugin_lazarus .controls input[type="number"],
 #settings_plugin_lazarus .controls select {
     box-sizing: border-box;
@@ -423,7 +472,8 @@
     .lazarus-mode-controls,
     .lazarus-resume-actions,
     .lazarus-file-selector-controls,
-    .lazarus-failsafe-row {
+    .lazarus-failsafe-row,
+    .lazarus-license-actions {
         flex-direction: column;
     }
 

@@ -2,55 +2,135 @@
     <div class="container-fluid lazarus-ui">
         <div class="lazarus-hero">
             <div class="lazarus-title-stack">
-                <h3 class="lazarus-title">Lazarus</h3>
+                <h3 class="lazarus-title">Failed Print Resume Wizard</h3>
+                <p class="lazarus-slogan">Save Time, Save $$$ , Save that Print!</p>
                 <p class="lazarus-tagline">
-                    Resumes failed prints. If the print is still on the bed, with Lazarus it is not dead... only sleeping.
+                    <em>Powered by Lazarus, the only patent pending method that realigns and resumes an incomplete print easily, safely, accurately, and in seconds! .... all rights reserved</em>
                 </p>
             </div>
+        </div>
 
-            <div class="lazarus-nav-row">
-                <div class="lazarus-nav-left">
-                    <button class="btn lazarus-nav-btn"
-                            type="button"
-                            data-bind="click: openActivationPage"
-                            title="Open activation and pricing in your browser.">
-                        Activate
-                    </button>
+        <div class="lazarus-nav-row">
+            <div class="lazarus-nav-left">
+                <button class="btn lazarus-nav-btn"
+                        type="button"
+                        data-bind="click: openActivationPage"
+                        title="Open activation and pricing in your browser.">
+                    Pricing / Activation
+                </button>
 
-                    <button class="btn lazarus-nav-btn"
-                            type="button"
-                            data-toggle="modal"
-                            data-target="#howto-modal"
-                            title="Open a quick workflow guide.">
-                        How It Works
-                    </button>
+                <button class="btn lazarus-nav-btn"
+                        type="button"
+                        data-toggle="modal"
+                        data-target="#howto-modal"
+                        title="Open a quick workflow guide.">
+                    How It Works
+                </button>
 
-                    <button class="btn lazarus-nav-btn"
-                            type="button"
-                            data-toggle="modal"
-                            data-target="#contact-modal"
-                            title="Open support details.">
-                        Contact
-                    </button>
-                </div>
+                <button class="btn lazarus-nav-btn"
+                        type="button"
+                        data-toggle="modal"
+                        data-target="#contact-modal"
+                        title="Open support details.">
+                    Contact
+                </button>
+            </div>
 
-                <div class="lazarus-nav-right">
-                    <span class="label label-success"
-                          data-bind="visible: licenseValid()">
-                        License Valid
-                    </span>
+            <div class="lazarus-nav-right">
+                <span class="label label-success"
+                      data-bind="visible: licenseValid()">
+                    License Valid
+                </span>
 
-                    <span class="label label-important"
-                          data-bind="visible: !licenseValid()">
-                        License Required
-                    </span>
-                </div>
+                <span class="label label-important"
+                      data-bind="visible: !licenseValid()">
+                    License Required
+                </span>
             </div>
         </div>
 
         <div class="lazarus-help-text"
              data-bind="visible: !licenseValid()">
-            Pricing and activation happen on the Lazarus website, outside OctoPrint.
+            Pricing and activation happen on the Failed Print Resume Wizard website, outside OctoPrint.
+        </div>
+
+        <div class="lazarus-card lazarus-license-card">
+            <div class="lazarus-stage-header">
+                <div>
+                    <div class="lazarus-standard-label">License</div>
+                    <h4>Activate This OctoPrint Install</h4>
+                </div>
+
+                <div class="lazarus-license-status">
+                    <span class="label label-success"
+                          data-bind="visible: licenseValid()">
+                        Active
+                    </span>
+                    <span class="label label-important"
+                          data-bind="visible: !licenseValid()">
+                        Required
+                    </span>
+                    <span data-bind="text: licenseDeviceSummary"></span>
+                </div>
+            </div>
+
+            <div class="lazarus-help-text" data-bind="text: licenseStatusText"></div>
+
+            <div class="row-fluid lazarus-license-grid">
+                <div class="span4">
+                    <label>Install ID</label>
+                    <input type="text"
+                           class="input-block-level lazarus-input"
+                           readonly
+                           data-bind="value: installId">
+                </div>
+
+                <div class="span4">
+                    <label>Checkout Email</label>
+                    <input type="email"
+                           class="input-block-level lazarus-input"
+                           placeholder="you@example.com"
+                           data-bind="value: licenseEmail, valueUpdate: 'afterkeydown'">
+                </div>
+
+                <div class="span4">
+                    <label>License Key</label>
+                    <input type="text"
+                           class="input-block-level lazarus-input"
+                           placeholder="Paste license key"
+                           data-bind="value: licenseKey, valueUpdate: 'afterkeydown'">
+                </div>
+            </div>
+
+            <div class="lazarus-license-actions">
+                <button class="btn lazarus-function-btn"
+                        type="button"
+                        data-bind="click: recoverLicenseKey, enable: !licenseBusy()"
+                        title="Use the checkout email and this install ID to look up the license key.">
+                    Find License Key
+                </button>
+
+                <button class="btn lazarus-action-btn"
+                        type="button"
+                        data-bind="click: activateLicense, enable: !licenseBusy()"
+                        title="Activate this OctoPrint install with your subscription license.">
+                    Activate This Device
+                </button>
+
+                <button class="btn lazarus-function-btn"
+                        type="button"
+                        data-bind="click: openActivationPage"
+                        title="Open checkout and account activation in a browser.">
+                    Open Checkout
+                </button>
+
+                <button class="btn lazarus-function-btn"
+                        type="button"
+                        data-bind="click: deactivateDevice, enable: licenseValid() && !licenseBusy()"
+                        title="Remove this OctoPrint install from the active license device list.">
+                    Deactivate This Device
+                </button>
+            </div>
         </div>
 
         <div class="lazarus-card lazarus-mode-card">
@@ -134,7 +214,7 @@
                            class="input-block-level lazarus-input"
                            placeholder="22.0"
                            data-bind="value: measuredHeight"
-                           title="Measure the saved print and enter the lower of the two edge measurements.">
+                           title="Measure the incomplete print and enter the lower of the two edge measurements.">
                 </div>
 
                 <div class="span6">
@@ -150,7 +230,7 @@
             </div>
 
             <div class="lazarus-help-text">
-                Layer height is detected automatically from the selected G-code file.
+                Measure the left and right side of the incomplete print and enter the lower value to the nearest 0.1 mm.
             </div>
 
             <button class="btn btn-large btn-block lazarus-action-btn"
@@ -178,7 +258,7 @@
 
                 <div class="lazarus-datum-display"
                      title="The target point used for final alignment.">
-                    True Alignment Point:
+                    Alignment target coordinates:
                     <span>X=<strong data-bind="text: datumX"></strong></span>
                     <span>Y=<strong data-bind="text: datumY"></strong></span>
                     <span>Z=<strong data-bind="text: datumZ"></strong></span>
@@ -198,7 +278,7 @@
                     <button class="btn btn-block lazarus-function-btn"
                             data-bind="click: goToDatum"
                             title="Move the toolhead over the alignment target.">
-                        2. Move To Alignment Point
+                        2. Move To Alignment Zone
                     </button>
                 </div>
             </div>
@@ -234,11 +314,11 @@
         </div>
 
         <div class="lazarus-legal-links">
-            <a href="https://app.lazarus3dprint.com/license" target="_blank" rel="noopener noreferrer">License</a>
+            <a href="https://wizard.lazarus3dprint.com/license" target="_blank" rel="noopener noreferrer">License</a>
             <span aria-hidden="true">|</span>
-            <a href="https://app.lazarus3dprint.com/terms" target="_blank" rel="noopener noreferrer">Terms</a>
+            <a href="https://wizard.lazarus3dprint.com/terms" target="_blank" rel="noopener noreferrer">Terms</a>
             <span aria-hidden="true">|</span>
-            <a href="https://app.lazarus3dprint.com/privacy" target="_blank" rel="noopener noreferrer">Privacy</a>
+            <a href="https://wizard.lazarus3dprint.com/privacy" target="_blank" rel="noopener noreferrer">Privacy</a>
         </div>
     </div>
 
@@ -262,7 +342,7 @@
                 </label>
 
                 <label class="checkbox lazarus-checkbox lazarus-expert-option"
-                       title="Use saved assumed position values from the Lazarus settings.">
+                       title="Use saved assumed position values from Failed Print Resume Wizard settings.">
                     <input type="checkbox" data-bind="checked: useAssumedPositionCoordinates">
                     Use saved assumed position coordinates.
                 </label>
@@ -348,11 +428,12 @@
         </div>
 
         <div class="modal-body">
-            <p>1. Select the original G-code file and enter the measured height of the saved print.</p>
-            <p>2. Build the resume file to calculate the true alignment point.</p>
-            <p>3. Establish a safe starting coordinate state, then move to the alignment point.</p>
-            <p>4. Use OctoPrint motion controls to align the nozzle to the print and click Position Calibrated.</p>
-            <p>5. Confirm temperatures, then download the resume file or start the resume sequence.</p>
+            <p><strong>Failed Print Resume Wizard</strong></p>
+            <p>1. Choose the original G-code from OctoPrint storage or from your device.</p>
+            <p>2. Measure the height of the incomplete print on both the left and right side. Enter the lower value to the nearest 0.1 mm and choose which side measured lower.</p>
+            <p>3. Build Resume G-code. The Wizard finds the layer, calculates the alignment target, and prepares a safe resume file for review.</p>
+            <p>4. Safe Resume Homing gives you ways to unlock motion control and move safely over the target for realignment.</p>
+            <p>5. Use relative motion commands to place the nozzle paper-test perfect on the chosen side of the incomplete print. Then select Position Calibrated, heat the nozzle, and download or resume.</p>
         </div>
 
         <div class="modal-footer">
@@ -372,8 +453,8 @@
         </div>
 
         <div class="modal-body">
-            <p>Support and activation: <a href="https://app.lazarus3dprint.com" target="_blank" rel="noopener noreferrer">app.lazarus3dprint.com</a></p>
-            <p>Email: <a href="mailto:ksmith1489@protonmail.com">ksmith1489@protonmail.com</a></p>
+            <p>Support and activation: <a href="https://wizard.lazarus3dprint.com" target="_blank" rel="noopener noreferrer">wizard.lazarus3dprint.com</a></p>
+            <p>Email: <a href="mailto:failed.print.resume.wizard@proton.me">failed.print.resume.wizard@proton.me</a></p>
         </div>
 
         <div class="modal-footer">

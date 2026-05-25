@@ -3,11 +3,11 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "OctoPrint-Lazarus"
-version = "0.1.1"
-description = "Resumes failed prints if the print is still on the bed."
+name = "OctoPrint-Failed-Print-Resume-Wizard"
+version = "1.0.0"
+description = "Failed Print Resume Wizard helps recover failed prints while the partial print is still on the bed."
 authors = [
-    {name = "Kenneth B Smith", email = "ksmith1489@protonmail.com"}
+    {name = "Kenneth B Smith", email = "failed.print.resume.wizard@proton.me"}
 ]
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.7, <4"
@@ -31,6 +31,6 @@ octoprint_lazarus = [
 lazarus = "octoprint_lazarus"
 
 [project.urls]
-Homepage = "https://app.lazarus3dprint.com"
+Homepage = "https://wizard.lazarus3dprint.com"
 Source = "https://github.com/ksmith1489/lazarus-plugin"
-Documentation = "https://app.lazarus3dprint.com/activate"
+Documentation = "https://wizard.lazarus3dprint.com/activate"

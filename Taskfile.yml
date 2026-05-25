@@ -2,7 +2,7 @@ version: "3"
 
 tasks:
   test:
-    desc: Run the Lazarus resume engine regression tests
+    desc: Run the Failed Print Resume Wizard resume engine regression tests
     cmds:
       - python3 -m unittest tests.test_resume_engine
 

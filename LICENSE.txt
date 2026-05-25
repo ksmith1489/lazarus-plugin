@@ -1,10 +1,10 @@
-Lazarus Proprietary Software License
-Copyright © 2026 Lazarus. All rights reserved.
+Failed Print Resume Wizard Proprietary Software License
+Copyright (c) 2026 Failed Print Resume Wizard. All rights reserved.
 
 Patent Pending.
 
 This software is licensed, not sold. Subject to your compliance with the
-applicable Terms of Service, Lazarus grants you a limited,
+applicable Terms of Service, Failed Print Resume Wizard grants you a limited,
 non-exclusive, non-transferable, non-sublicensable, revocable license to
 install and use this software solely for your own internal 3D printing use.
 
@@ -22,13 +22,13 @@ You may not, and may not permit any third party to:
 5. bypass, disable, or interfere with license validation or subscription
    controls.
 
-The software is provided “AS IS” and “AS AVAILABLE,” without warranties of
+The software is provided "AS IS" and "AS AVAILABLE," without warranties of
 any kind, express or implied, to the fullest extent permitted by law,
 including without limitation implied warranties of merchantability, fitness
 for a particular purpose, title, and non-infringement.
 
-To the fullest extent permitted by law, Lazarus shall not be
-liable for any indirect, incidental, special, consequential, exemplary, or
+To the fullest extent permitted by law, Failed Print Resume Wizard shall not
+be liable for any indirect, incidental, special, consequential, exemplary, or
 punitive damages, or any loss of data, profits, revenue, business, goodwill,
 or use, arising out of or related to the software or its use.
 
@@ -41,4 +41,6 @@ Use of cloud-connected functionality, including checkout, activation, and
 license validation, is also subject to the Terms of Service and Privacy Policy.
 
 For licensing questions, partnership inquiries, or OEM/manufacturer licensing,
-visit: https://app.lazarus3dprint.com/license
+contact: failed.print.resume.wizard@proton.me
+
+Current license page: https://wizard.lazarus3dprint.com/license

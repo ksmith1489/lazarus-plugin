@@ -8,6 +8,14 @@ $(function () {
         self.settingsViewModel = parameters[0];
 
         self.licenseValid = ko.observable(false);
+        self.licenseBusy = ko.observable(false);
+        self.licenseEmail = ko.observable("");
+        self.licenseKey = ko.observable("");
+        self.licenseStatusText = ko.observable("Checking license...");
+        self.licenseDeviceCount = ko.observable("");
+        self.licenseMaxDevices = ko.observable(3);
+        self.licenseModel = ko.observable("");
+        self.installId = ko.observable("");
         self.measuredHeight = ko.observable("");
         self.alignmentSide = ko.observable("left");
         self.controlMode = ko.observable("octoprint");
@@ -54,6 +62,17 @@ $(function () {
             window.open(getActivationUrl(), "_blank", "noopener,noreferrer");
         };
 
+        self.licenseDeviceSummary = ko.computed(function () {
+            var count = self.licenseDeviceCount();
+            var max = self.licenseMaxDevices() || 3;
+
+            if (count === "" || count === null || typeof count === "undefined") {
+                return "Device count will appear after activation.";
+            }
+
+            return count + " of " + max + " devices active.";
+        });
+
         function notify(title, text, type) {
             new PNotify({
                 title: title,
@@ -66,6 +85,35 @@ $(function () {
             return OctoPrint.simpleApiCommand("lazarus", cmd, payload || {});
         }
 
+        function getPluginSettings() {
+            if (self.settingsViewModel &&
+                self.settingsViewModel.settings &&
+                self.settingsViewModel.settings.plugins &&
+                self.settingsViewModel.settings.plugins.lazarus) {
+                return self.settingsViewModel.settings.plugins.lazarus;
+            }
+
+            return null;
+        }
+
+        function readPluginSetting(name) {
+            var pluginSettings = getPluginSettings();
+
+            if (pluginSettings && typeof pluginSettings[name] === "function") {
+                return $.trim(pluginSettings[name]() || "");
+            }
+
+            return "";
+        }
+
+        function writePluginSetting(name, value) {
+            var pluginSettings = getPluginSettings();
+
+            if (pluginSettings && typeof pluginSettings[name] === "function") {
+                pluginSettings[name](value || "");
+            }
+        }
+
         function getApiBaseUrl() {
             return window.API_BASEURL || ((window.BASEURL || "/") + "api/");
         }
@@ -76,13 +124,13 @@ $(function () {
             if (self.settingsViewModel &&
                 self.settingsViewModel.settings &&
                 self.settingsViewModel.settings.plugins &&
-                self.settingsViewModel.settings.plugins.lazarus &&
-                typeof self.settingsViewModel.settings.plugins.lazarus.engine_url === "function") {
-                engineUrl = $.trim(self.settingsViewModel.settings.plugins.lazarus.engine_url() || "");
+                getPluginSettings() &&
+                typeof getPluginSettings().engine_url === "function") {
+                engineUrl = readPluginSetting("engine_url");
             }
 
-            if (!engineUrl) {
-                engineUrl = "https://app.lazarus3dprint.com";
+            if (!engineUrl || engineUrl === ("https://app." + "lazarus3dprint.com")) {
+                engineUrl = "https://wizard.lazarus3dprint.com";
             }
 
             return engineUrl.replace(/\/+$/, "");
@@ -92,12 +140,12 @@ $(function () {
             if (self.settingsViewModel &&
                 self.settingsViewModel.settings &&
                 self.settingsViewModel.settings.plugins &&
-                self.settingsViewModel.settings.plugins.lazarus &&
-                typeof self.settingsViewModel.settings.plugins.lazarus.install_id === "function") {
-                return $.trim(self.settingsViewModel.settings.plugins.lazarus.install_id() || "");
+                getPluginSettings() &&
+                typeof getPluginSettings().install_id === "function") {
+                return readPluginSetting("install_id");
             }
 
-            return "";
+            return self.installId();
         }
 
         function getFilesApiUrl() {
@@ -141,6 +189,34 @@ $(function () {
             }
 
             return fallbackText;
+        }
+
+        function refreshLicenseFieldsFromSettings() {
+            self.installId(getInstallId());
+            self.licenseEmail(readPluginSetting("license_email"));
+            self.licenseKey(readPluginSetting("license_key"));
+        }
+
+        function updateLicenseStatus(resp) {
+            var valid = resp && resp.valid === true;
+
+            self.licenseValid(valid);
+            self.licenseModel(resp && resp.license_model ? resp.license_model : "");
+
+            if (resp && resp.device_count != null) {
+                self.licenseDeviceCount(resp.device_count);
+            }
+
+            if (resp && resp.max_devices != null) {
+                self.licenseMaxDevices(resp.max_devices);
+            }
+
+            if (valid) {
+                self.licenseStatusText("License active.");
+                return;
+            }
+
+            self.licenseStatusText(resp && resp.error ? resp.error : "License required before generating resume output.");
         }
 
         function updateControlMode(mode) {
@@ -460,7 +536,7 @@ $(function () {
                 self.selectedFileLabel(resp.file.name);
             }
 
-            self.resumeFileName(resp.resume_file_name || "lazarus_resume.gcode");
+            self.resumeFileName(resp.resume_file_name || "resume.gcode");
             self.previewText(resp.preview ? resp.preview.join("\n") : "");
             self.motionAcknowledged(false);
             self.resumeBuilt(true);
@@ -519,6 +595,10 @@ $(function () {
                 .done(function (resp) {
                     if (!resp || resp.ok !== true) {
                         return;
+                    }
+
+                    if (resp.install_id) {
+                        self.installId(resp.install_id);
                     }
 
                     updateControlMode(resp.control_mode);
@@ -778,7 +858,7 @@ $(function () {
 
             link = document.createElement("a");
             link.href = getResumeDownloadUrl();
-            link.download = self.resumeFileName() || "lazarus_resume.gcode";
+            link.download = self.resumeFileName() || "resume.gcode";
             link.style.display = "none";
             document.body.appendChild(link);
             link.click();
@@ -803,7 +883,7 @@ $(function () {
                         return;
                     }
 
-                    notify("Lazarus", resp.message || "Resume sequence started", "success");
+                    notify("Failed Print Resume Wizard", resp.message || "Resume sequence started", "success");
                 })
                 .fail(function (xhr) {
                     notify("Error", getAjaxErrorMessage(xhr, "Resume failed"), "error");
@@ -813,10 +893,119 @@ $(function () {
         self.validateLicense = function () {
             api("validate")
                 .done(function (resp) {
-                    self.licenseValid(resp && resp.valid === true);
+                    updateLicenseStatus(resp);
                 })
                 .fail(function () {
                     self.licenseValid(false);
+                    self.licenseStatusText("License check failed. Check the license service URL and internet access.");
+                });
+        };
+
+        self.activateLicense = function () {
+            var email = $.trim(self.licenseEmail() || "");
+            var licenseKey = $.trim(self.licenseKey() || "");
+
+            if (!email || !licenseKey) {
+                notify("Activation", "Enter the checkout email and license key first.", "notice");
+                return;
+            }
+
+            self.licenseBusy(true);
+            api("activate_license", {
+                email: email,
+                license_key: licenseKey
+            })
+                .done(function (resp) {
+                    self.licenseBusy(false);
+
+                    if (!resp || resp.ok !== true || resp.valid !== true) {
+                        updateLicenseStatus(resp || {});
+                        notify("Activation", resp && resp.error ? resp.error : "Activation failed.", "error");
+                        return;
+                    }
+
+                    writePluginSetting("license_email", email);
+                    writePluginSetting("license_key", licenseKey);
+                    updateLicenseStatus(resp);
+                    notify("Activation", "This OctoPrint install is active.", "success");
+                })
+                .fail(function (xhr) {
+                    self.licenseBusy(false);
+                    self.licenseValid(false);
+                    self.licenseStatusText(getAjaxErrorMessage(xhr, "Activation failed."));
+                    notify("Activation", getAjaxErrorMessage(xhr, "Activation failed."), "error");
+                });
+        };
+
+        self.recoverLicenseKey = function () {
+            var email = $.trim(self.licenseEmail() || "");
+
+            if (!email) {
+                notify("License Key", "Enter the checkout email first.", "notice");
+                return;
+            }
+
+            self.licenseBusy(true);
+            api("recover_license_key", {
+                email: email
+            })
+                .done(function (resp) {
+                    self.licenseBusy(false);
+
+                    if (!resp || resp.ok !== true || !resp.license_key) {
+                        updateLicenseStatus(resp || {});
+                        notify("License Key", resp && resp.error ? resp.error : "License key lookup failed.", "error");
+                        return;
+                    }
+
+                    self.licenseKey(resp.license_key);
+                    writePluginSetting("license_email", email);
+                    writePluginSetting("license_key", resp.license_key);
+                    updateLicenseStatus(resp);
+                    notify("License Key", "License key loaded for this install.", "success");
+                })
+                .fail(function (xhr) {
+                    self.licenseBusy(false);
+                    self.licenseStatusText(getAjaxErrorMessage(xhr, "License key lookup failed."));
+                    notify("License Key", getAjaxErrorMessage(xhr, "License key lookup failed."), "error");
+                });
+        };
+
+        self.deactivateDevice = function () {
+            var email = $.trim(self.licenseEmail() || "");
+            var licenseKey = $.trim(self.licenseKey() || "");
+
+            if (!email || !licenseKey) {
+                notify("Deactivate", "Enter the checkout email and license key first.", "notice");
+                return;
+            }
+
+            self.licenseBusy(true);
+            api("deactivate_device", {
+                email: email,
+                license_key: licenseKey
+            })
+                .done(function (resp) {
+                    self.licenseBusy(false);
+
+                    if (!resp || resp.ok !== true) {
+                        notify("Deactivate", resp && resp.error ? resp.error : "Device deactivation failed.", "error");
+                        return;
+                    }
+
+                    self.licenseValid(false);
+                    if (resp.device_count != null) {
+                        self.licenseDeviceCount(resp.device_count);
+                    }
+                    if (resp.max_devices != null) {
+                        self.licenseMaxDevices(resp.max_devices);
+                    }
+                    self.licenseStatusText("This OctoPrint install has been deactivated.");
+                    notify("Deactivate", "This device was removed from the license.", "success");
+                })
+                .fail(function (xhr) {
+                    self.licenseBusy(false);
+                    notify("Deactivate", getAjaxErrorMessage(xhr, "Device deactivation failed."), "error");
                 });
         };
 
@@ -909,6 +1098,7 @@ $(function () {
         };
 
         self.onStartupComplete = function () {
+            refreshLicenseFieldsFromSettings();
             self.validateLicense();
             self.loadStatus();
             self.loadAvailableFiles();
@@ -916,6 +1106,7 @@ $(function () {
 
         self.onTabChange = function (current) {
             if (current === "#tab_plugin_lazarus") {
+                refreshLicenseFieldsFromSettings();
                 self.validateLicense();
                 self.loadStatus();
                 self.loadAvailableFiles();

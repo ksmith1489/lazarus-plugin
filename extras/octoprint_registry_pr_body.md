@@ -1,15 +1,15 @@
-- [x] You have read the ["Registering a new Plugin"](https://plugins.octoprint.org/help/registering/) guide.
+﻿- [x] You have read the ["Registering a new Plugin"](https://plugins.octoprint.org/help/registering/) guide.
 - [x] You want to and are able to maintain the plugin you are registering, long-term.
 - [x] You understand why the plugin you are registering works.
 - [x] You have read and acknowledge the [Code of Conduct](https://octoprint.org/conduct/).
 
 #### What is the name of your plugin?
 
-Lazarus
+Failed Print Resume Wizard
 
 #### What does your plugin do?
 
-Lazarus helps users recover failed 3D prints when the partially completed print is still attached to the bed.
+Failed Print Resume Wizard helps users recover failed 3D prints when the partially completed print is still attached to the bed.
 
 The plugin generates resume G-code locally inside OctoPrint from the original G-code file, the measured print height, and the detected layer structure of that file. It also provides a guided alignment workflow so the user can safely align the printer to the real-world print position before choosing to resume.
 
@@ -25,45 +25,45 @@ https://github.com/ksmith1489/lazarus-plugin
 
 Yes.
 
-ChatGPT, GitHub Copilot, and Codex were used as development assistants during development and cleanup. I understand the plugin’s architecture and behavior and I am maintaining it directly.
+ChatGPT, GitHub Copilot, and Codex were used as development assistants during development and cleanup. I understand the plugin's architecture and behavior and I am maintaining it directly.
 
 #### Is your plugin commercial in nature?
 
 Yes.
 
-Lazarus is commercial software. Installation is free, but resume generation and execution require an active subscription.
+Failed Print Resume Wizard is commercial software. Installation is free, but resume generation and execution require an active subscription.
 
 Pricing, activation, license, terms, and privacy information are available here:
 
-https://app.lazarus3dprint.com/activate
-https://app.lazarus3dprint.com/license
-https://app.lazarus3dprint.com/terms
-https://app.lazarus3dprint.com/privacy
+https://wizard.lazarus3dprint.com/activate
+https://wizard.lazarus3dprint.com/license
+https://wizard.lazarus3dprint.com/terms
+https://wizard.lazarus3dprint.com/privacy
 
 #### Does your plugin rely on some cloud services?
 
 Partially.
 
-Resume G-code generation runs locally inside the OctoPrint plugin. The original G-code file is not uploaded to the Lazarus service for resume generation.
+Resume G-code generation runs locally inside the OctoPrint plugin. The original G-code file is not uploaded to the Failed Print Resume Wizard service for resume generation.
 
-The plugin does use https://app.lazarus3dprint.com for activation and subscription validation.
+The plugin does use https://wizard.lazarus3dprint.com for activation and subscription validation.
 
 The plugin is marked with the `cloud` attribute and includes a privacy policy link:
-https://app.lazarus3dprint.com/privacy
+https://wizard.lazarus3dprint.com/privacy
 
-If the license validation service is unavailable, Lazarus fails closed for resume generation and execution without causing OctoPrint itself to malfunction.
+If the license validation service is unavailable, Failed Print Resume Wizard fails closed for resume generation and execution without causing OctoPrint itself to malfunction.
 
 #### Further notes
 
-This is a fresh registration under `Lazarus` after the previous `OctoGoat` submission was closed.
+This is a fresh registration under `Failed Print Resume Wizard` after the previous `OctoGoat` submission was closed.
 
 This resubmission addresses the review items raised on `#1435`:
 
-- the plugin has been renamed from `OctoGoat` to `Lazarus`;
+- the plugin has been renamed from `OctoGoat` to `Failed Print Resume Wizard`;
 - packaging has been migrated to `pyproject.toml`, and the repository layout has been aligned with the current OctoPrint cookiecutter-style scaffold while avoiding the legacy `setup.py` packaging path;
 - the promotional / watermarked hero assets were removed and the UI copy was simplified;
 - unused settings, no-op startup code, and unreferenced API / frontend paths were removed;
 - checkout remains outside OctoPrint, and the plugin keeps server-side permission checks, server-side license enforcement, the privacy policy link, and the software update hook;
 - the source repo now includes a regression test for the resume engine.
 
-If there are any remaining repository-specific issues with this Lazarus submission, I would appreciate a concrete list and I will address them directly.
+If there are any remaining repository-specific issues with this Failed Print Resume Wizard submission, I would appreciate a concrete list and I will address them directly.

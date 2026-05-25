@@ -1,12 +1,12 @@
-# Lazarus: Resume Failed Prints When The Print Is Still On The Bed
+﻿# Failed Print Resume Wizard: Resume Failed Prints When The Print Is Still On The Bed
 
 Hi everyone,
 
-I've been working on a new OctoPrint plugin called **Lazarus**.
+I've been working on a new OctoPrint plugin called **Failed Print Resume Wizard**.
 
-Lazarus is for the situation where a print failed, but the printed part is still attached to the bed and worth saving.
+Failed Print Resume Wizard is for the situation where a print failed, but the printed part is still attached to the bed and worth saving.
 
-Instead of starting over, Lazarus helps the user:
+Instead of starting over, Failed Print Resume Wizard helps the user:
 
 - select the original G-code file;
 - enter the measured height of the saved print;
@@ -17,11 +17,11 @@ Instead of starting over, Lazarus helps the user:
 
 It is designed to avoid unsafe automatic Z homing into an existing print and to keep the user in control of final movement and resume confirmation.
 
-Lazarus also supports optional Moonraker / Klipper workflows through a user-provided local Moonraker address.
+Failed Print Resume Wizard also supports optional Moonraker / Klipper workflows through a user-provided local Moonraker address.
 
 ## Current status
 
-Lazarus is installable now and is currently under review for listing in the official OctoPrint plugin repository.
+Failed Print Resume Wizard is installable now and is currently under review for listing in the official OctoPrint plugin repository.
 
 Until that listing is approved, it can be installed from URL in OctoPrint's Plugin Manager:
 
@@ -35,9 +35,9 @@ https://github.com/ksmith1489/lazarus-plugin
 
 ## Activation / legal info
 
-- https://app.lazarus3dprint.com/activate
-- https://app.lazarus3dprint.com/license
-- https://app.lazarus3dprint.com/terms
-- https://app.lazarus3dprint.com/privacy
+- https://wizard.lazarus3dprint.com/activate
+- https://wizard.lazarus3dprint.com/license
+- https://wizard.lazarus3dprint.com/terms
+- https://wizard.lazarus3dprint.com/privacy
 
 If anyone wants to try it and share feedback, edge cases, or firmware-specific behavior, I'd genuinely appreciate it.

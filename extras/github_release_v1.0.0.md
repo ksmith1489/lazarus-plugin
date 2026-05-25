@@ -1,6 +1,6 @@
-# Lazarus v0.1.1
+﻿# Failed Print Resume Wizard v1.0.0
 
-Lazarus helps recover failed 3D prints when the partial print is still attached to the bed.
+Failed Print Resume Wizard helps recover failed 3D prints when the partial print is still attached to the bed.
 
 ## Highlights
 
@@ -25,19 +25,19 @@ In OctoPrint:
 2. Open `Plugin Manager`
 3. Choose `Get More...`
 4. Select `...from URL`
-5. Paste the Lazarus ZIP URL
+5. Paste the Failed Print Resume Wizard ZIP URL
 6. Install and restart OctoPrint
 
 ## Notes
 
-- Lazarus is proprietary commercial software.
+- Failed Print Resume Wizard is proprietary commercial software.
 - Installation is free, but resume generation and execution require an active subscription.
 - Activation, license, terms, and privacy information are available at:
-  - https://app.lazarus3dprint.com/activate
-  - https://app.lazarus3dprint.com/license
-  - https://app.lazarus3dprint.com/terms
-  - https://app.lazarus3dprint.com/privacy
+  - https://wizard.lazarus3dprint.com/activate
+  - https://wizard.lazarus3dprint.com/license
+  - https://wizard.lazarus3dprint.com/terms
+  - https://wizard.lazarus3dprint.com/privacy
 
 ## Current Listing Status
 
-Lazarus is installable now and is under review for listing in the official OctoPrint plugin repository.
+Failed Print Resume Wizard is installable now and is under review for listing in the official OctoPrint plugin repository.
