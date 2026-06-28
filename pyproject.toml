@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "OctoPrint-Failed-Print-Resume-Wizard"
-version = "1.0.0"
-description = "Failed Print Resume Wizard helps recover failed prints while the partial print is still on the bed."
+name = "OctoPrint-The-Helm"
+version = "2.0.0"
+description = "The Helm helps recover failed prints while the partial print is still on the bed."
 authors = [
     {name = "Kenneth B Smith", email = "failed.print.resume.wizard@proton.me"}
 ]

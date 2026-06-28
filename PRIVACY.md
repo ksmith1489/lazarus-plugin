@@ -1,14 +1,14 @@
-# Failed Print Resume Wizard Privacy Policy
+# The Helm Privacy Policy
 
 Effective date: April 22, 2026
 
 ## 1. Overview
 
-This Privacy Policy explains what information Failed Print Resume Wizard collects and how it is used.
+This Privacy Policy explains what information The Helm collects and how it is used.
 
 ## 2. Information we collect
 
-Depending on the feature being used, Failed Print Resume Wizard may process:
+Depending on the feature being used, The Helm may process:
 
 - installation identifier;
 - checkout email and license key for activation;
@@ -18,7 +18,7 @@ Depending on the feature being used, Failed Print Resume Wizard may process:
 - basic service logs needed for activation, validation, debugging, and abuse prevention;
 - billing-related information handled by Stripe and its checkout tools.
 
-Failed Print Resume Wizard does not sell personal data.
+The Helm does not sell personal data.
 
 ## 3. Local print files
 
@@ -43,7 +43,7 @@ We use limited data to:
 
 ## 6. Data sharing
 
-We share data only with service providers needed to operate Failed Print Resume Wizard, such as Stripe for payment processing and hosting providers, or when required by law.
+We share data only with service providers needed to operate The Helm, such as Stripe for payment processing and hosting providers, or when required by law.
 
 ## 7. Data retention
 

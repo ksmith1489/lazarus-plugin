@@ -1,6 +1,6 @@
-﻿# Failed Print Resume Wizard
+# The Helm
 
-Failed Print Resume Wizard helps recover failed 3D prints when the partial print is still attached to the bed.
+The Helm helps recover failed 3D prints when the partial print is still attached to the bed.
 
 It generates resume G-code locally inside OctoPrint from the original G-code file, the measured print height, and the detected layer structure of that file. The plugin then guides the user through safe alignment before resuming.
 
@@ -15,7 +15,7 @@ In OctoPrint:
 5. Paste this URL:
 
 ```text
-https://github.com/ksmith1489/lazarus-plugin/archive/refs/tags/v1.0.0.zip
+https://github.com/ksmith1489/lazarus-plugin/archive/refs/tags/v2.0.0.zip
 ```
 
 6. Install and restart OctoPrint when prompted
@@ -49,7 +49,7 @@ Typical use looks like this:
 
 ## Firmware Support
 
-Failed Print Resume Wizard supports:
+The Helm supports:
 
 - standard OctoPrint printer communication;
 - Marlin-based printers;

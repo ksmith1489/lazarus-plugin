@@ -1,24 +1,24 @@
-﻿# Failed Print Resume Wizard Discovery Checklist
+# The Helm Discovery Checklist
 
 ## Highest Priority
 
 - Keep the OctoPrint registry PR current and responsive until listing is approved.
 - Publish a GitHub Release with clear install instructions and version notes.
 - Keep the README concise, technical, and install-oriented.
-- Use the Failed Print Resume Wizard GitHub ZIP URL consistently everywhere.
+- Use the The Helm GitHub ZIP URL consistently everywhere.
 
 ## Best Early Discovery Channels
 
 - OctoPrint Community Forum `Plugins` category
 - direct GitHub repository visits
 - short demonstration videos shared in maker / 3D printing communities
-- the Failed Print Resume Wizard activation / landing site
+- the The Helm activation / landing site
 
 ## Assets That Help Most
 
 - a short screen recording of a real failed-print recovery
 - one clean image or GIF showing the alignment workflow
-- a one-paragraph technical explanation of how Failed Print Resume Wizard works
+- a one-paragraph technical explanation of how The Helm works
 - a copy-paste install URL
 
 ## Messaging To Emphasize
@@ -40,4 +40,4 @@
 - switch from branch-head messaging to versioned release messaging
 - consider a release-based update workflow for cleaner user updates
 - post a polished forum announcement with demo media
-- update the Failed Print Resume Wizard website with a clear install section and FAQ
+- update the The Helm website with a clear install section and FAQ

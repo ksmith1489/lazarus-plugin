@@ -1,13 +1,11 @@
 <div id="tab_plugin_lazarus" class="tab-pane">
     <div class="container-fluid lazarus-ui">
         <div class="lazarus-hero">
-            <div class="lazarus-title-stack">
-                <h3 class="lazarus-title">Failed Print Resume Wizard</h3>
-                <p class="lazarus-slogan">Save Time, Save $$$ , Save that Print!</p>
-                <p class="lazarus-tagline">
-                    <em>Powered by Lazarus, the only patent pending method that realigns and resumes an incomplete print easily, safely, accurately, and in seconds! .... all rights reserved</em>
-                </p>
-            </div>
+            <img
+                class="lazarus-brand-banner"
+                src="{{ plugin_asset('lazarus', 'img/the-helm-banner.png') }}"
+                alt="The Helm — 3D Print Recovery &amp; Course Control. When the unexpected happens, take control."
+            >
         </div>
 
         <div class="lazarus-nav-row">
@@ -51,7 +49,7 @@
 
         <div class="lazarus-help-text"
              data-bind="visible: !licenseValid()">
-            Pricing and activation happen on the Failed Print Resume Wizard website, outside OctoPrint.
+            Pricing and activation happen on the The Helm website, outside OctoPrint.
         </div>
 
         <div class="lazarus-card lazarus-license-card">
@@ -342,7 +340,7 @@
                 </label>
 
                 <label class="checkbox lazarus-checkbox lazarus-expert-option"
-                       title="Use saved assumed position values from Failed Print Resume Wizard settings.">
+                       title="Use saved assumed position values from The Helm settings.">
                     <input type="checkbox" data-bind="checked: useAssumedPositionCoordinates">
                     Use saved assumed position coordinates.
                 </label>
@@ -516,10 +514,10 @@
         </div>
 
         <div class="modal-body">
-            <p><strong>Failed Print Resume Wizard</strong></p>
+            <p><strong>The Helm</strong></p>
             <p>1. Choose the original G-code from OctoPrint storage or from your device.</p>
             <p>2. Measure the height of the incomplete print on both the left and right side. Enter the lower value to the nearest 0.1 mm and choose which side measured lower.</p>
-            <p>3. Build Resume G-code. The Wizard finds the layer, calculates the alignment target, and prepares a safe resume file for review.</p>
+            <p>3. Build Resume G-code. The Helm finds the layer, calculates the alignment target, and prepares a safe resume file for review.</p>
             <p>4. Safe Resume Homing gives you ways to unlock motion control and move safely over the target for realignment.</p>
             <p>5. Use relative motion commands to place the nozzle paper-test perfect on the chosen side of the incomplete print. Then select Position Calibrated, heat the nozzle, and download or resume.</p>
         </div>

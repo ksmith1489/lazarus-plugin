@@ -908,7 +908,7 @@ $(function () {
                         return;
                     }
 
-                    notify("Failed Print Resume Wizard", resp.message || "Resume sequence started", "success");
+                    notify("The Helm", resp.message || "Resume sequence started", "success");
                 })
                 .fail(function (xhr) {
                     notify("Error", getAjaxErrorMessage(xhr, "Resume failed"), "error");

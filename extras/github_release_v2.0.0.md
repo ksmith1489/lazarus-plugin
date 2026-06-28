@@ -1,6 +1,6 @@
-﻿# Failed Print Resume Wizard v1.0.0
+# The Helm v2.0.0
 
-Failed Print Resume Wizard helps recover failed 3D prints when the partial print is still attached to the bed.
+The Helm helps recover failed 3D prints when the partial print is still attached to the bed.
 
 ## Highlights
 
@@ -16,7 +16,7 @@ Failed Print Resume Wizard helps recover failed 3D prints when the partial print
 Install directly from OctoPrint's Plugin Manager using:
 
 ```text
-https://github.com/ksmith1489/lazarus-plugin/archive/refs/tags/v1.0.0.zip
+https://github.com/ksmith1489/lazarus-plugin/archive/refs/tags/v2.0.0.zip
 ```
 
 In OctoPrint:
@@ -25,12 +25,12 @@ In OctoPrint:
 2. Open `Plugin Manager`
 3. Choose `Get More...`
 4. Select `...from URL`
-5. Paste the Failed Print Resume Wizard ZIP URL
+5. Paste the The Helm ZIP URL
 6. Install and restart OctoPrint
 
 ## Notes
 
-- Failed Print Resume Wizard is proprietary commercial software.
+- The Helm is proprietary commercial software.
 - Installation is free, but resume generation and execution require an active subscription.
 - Activation, license, terms, and privacy information are available at:
   - https://wizard.lazarus3dprint.com/activate
@@ -40,4 +40,4 @@ In OctoPrint:
 
 ## Current Listing Status
 
-Failed Print Resume Wizard is installable now and is under review for listing in the official OctoPrint plugin repository.
+The Helm is installable now and is under review for listing in the official OctoPrint plugin repository.
