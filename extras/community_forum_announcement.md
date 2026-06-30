@@ -1,12 +1,12 @@
-﻿# Failed Print Resume Wizard: Resume Failed Prints When The Print Is Still On The Bed
+# The Helm: Resume Failed Prints When The Print Is Still On The Bed
 
 Hi everyone,
 
-I've been working on a new OctoPrint plugin called **Failed Print Resume Wizard**.
+I've been working on a new OctoPrint plugin called **The Helm**.
 
-Failed Print Resume Wizard is for the situation where a print failed, but the printed part is still attached to the bed and worth saving.
+The Helm is for the situation where a print failed, but the printed part is still attached to the bed and worth saving.
 
-Instead of starting over, Failed Print Resume Wizard helps the user:
+Instead of starting over, The Helm helps the user:
 
 - select the original G-code file;
 - enter the measured height of the saved print;
@@ -17,16 +17,16 @@ Instead of starting over, Failed Print Resume Wizard helps the user:
 
 It is designed to avoid unsafe automatic Z homing into an existing print and to keep the user in control of final movement and resume confirmation.
 
-Failed Print Resume Wizard also supports optional Moonraker / Klipper workflows through a user-provided local Moonraker address.
+The Helm also supports optional Moonraker / Klipper workflows through a user-provided local Moonraker address.
 
 ## Current status
 
-Failed Print Resume Wizard is installable now and is currently under review for listing in the official OctoPrint plugin repository.
+The Helm is installable now and is currently under review for listing in the official OctoPrint plugin repository.
 
 Until that listing is approved, it can be installed from URL in OctoPrint's Plugin Manager:
 
 ```text
-https://github.com/ksmith1489/lazarus-plugin/archive/refs/tags/v1.0.0.zip
+https://github.com/ksmith1489/lazarus-plugin/archive/refs/tags/v2.0.0.zip
 ```
 
 ## Source

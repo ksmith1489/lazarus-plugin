@@ -29,8 +29,15 @@
 
 .lazarus-hero {
     margin-bottom: 16px;
-    padding: 20px;
-    text-align: center;
+    padding: 0;
+    overflow: hidden;
+    background: #020b13;
+}
+
+.lazarus-brand-banner {
+    display: block;
+    width: 100%;
+    height: auto;
 }
 
 .lazarus-title {
