@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "OctoPrint-The-Helm"
-version = "2.0.0"
-description = "The Helm helps recover failed prints while the partial print is still on the bed."
+version = "2.0.1"
+description = "The Helm recovers failed prints that are still attached or must be re-seated on the bed."
 authors = [
     {name = "Kenneth B Smith", email = "failed.print.resume.wizard@proton.me"}
 ]

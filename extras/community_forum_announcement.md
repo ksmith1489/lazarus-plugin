@@ -26,7 +26,7 @@ The Helm is installable now and is currently under review for listing in the off
 Until that listing is approved, it can be installed from URL in OctoPrint's Plugin Manager:
 
 ```text
-https://github.com/ksmith1489/lazarus-plugin/archive/refs/tags/v2.0.0.zip
+https://github.com/ksmith1489/lazarus-plugin/archive/refs/tags/v2.0.1.zip
 ```
 
 ## Source

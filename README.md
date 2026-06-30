@@ -1,6 +1,6 @@
 # The Helm
 
-The Helm helps recover failed 3D prints when the partial print is still attached to the bed.
+The Helm helps recover failed 3D prints whether the partial print is still attached or must be carefully re-seated on the bed.
 
 It generates resume G-code locally inside OctoPrint from the original G-code file, the measured print height, and the detected layer structure of that file. The plugin then guides the user through safe alignment before resuming.
 
@@ -15,7 +15,7 @@ In OctoPrint:
 5. Paste this URL:
 
 ```text
-https://github.com/ksmith1489/lazarus-plugin/archive/refs/tags/v2.0.0.zip
+https://github.com/ksmith1489/lazarus-plugin/archive/refs/tags/v2.0.1.zip
 ```
 
 6. Install and restart OctoPrint when prompted
@@ -30,6 +30,7 @@ The plugin:
 - uses the measured height of the incomplete print to identify the likely resume layer;
 - accounts for differing initial layer heights and spiral vase mode;
 - generates a resume G-code file for inspection and execution;
+- optionally prints an experimental landing pad and insertion-safe tagged supports for a loose failed print;
 - calculates a real-world alignment target;
 - guides the user through safe coordinate recovery and final nozzle alignment.
 

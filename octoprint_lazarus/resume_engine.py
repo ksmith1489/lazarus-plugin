@@ -1114,7 +1114,7 @@ def build_landing_pad_gcode(
 
     safe_park_z = max(float(park["z"]), float(first_layer_z) + 10.0)
     output_lines = [
-        "; --- LOOSE-BED LANDING PAD (LAZARUS V2) ---",
+        "; --- LOOSE-BED LANDING PAD (THE HELM V2) ---",
         "; WARNING: confirm the build plate is clear before running this file.",
         "; Slicer start G-code and first-layer setup are copied from the selected file.",
         "; First printable layer Z: {z:.3f} mm".format(z=first_layer_z),
