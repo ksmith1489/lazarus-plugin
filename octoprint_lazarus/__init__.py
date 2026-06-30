@@ -14,7 +14,7 @@ import octoprint.plugin
 import requests
 from octoprint.access.permissions import Permissions
 
-from .resume_engine import build_resumed_gcode
+from .resume_engine import build_landing_pad_gcode, build_resumed_gcode
 
 
 MONTH_SECONDS = 30 * 24 * 60 * 60
@@ -107,6 +107,7 @@ class LazarusPlugin(
             deactivate_device=["email", "license_key"],
             set_control_mode=["control_mode"],
             test_moonraker=[],
+            build_landing_pad=[],
             build_resume=["measured_height"],
             safe_resume_homing=[],
             apply_assumed_position=[],
@@ -237,6 +238,95 @@ class LazarusPlugin(
         if command == "deactivate_device":
             return self._deactivate_license_device(data)
 
+        if command == "build_landing_pad":
+            license_error = self._require_valid_license_for_output()
+            if license_error is not None:
+                return license_error
+
+            if data.get("bed_clear_confirmed") is not True:
+                return dict(ok=False, error="Confirm the build plate is clear before printing the landing pad.")
+
+            gcode_text, source = self._resolve_gcode_source(data)
+            park = self._get_control_park_position()
+            include_supports = data.get("include_supports") is True
+            support_build_height = None
+            if include_supports:
+                try:
+                    measured_height = float(data.get("measured_height"))
+                    raw_support_clearance = data.get("support_clearance_mm")
+                    support_clearance = float(
+                        0.8 if raw_support_clearance is None else raw_support_clearance
+                    )
+                except Exception:
+                    return dict(ok=False, error="Measured height and support clearance are required.")
+                if measured_height <= 0 or support_clearance < 0:
+                    return dict(ok=False, error="Measured height must be positive and support clearance cannot be negative.")
+                resume_result = build_resumed_gcode(
+                    original_gcode_text=gcode_text,
+                    firmware=self._settings.get(["firmware_type"]),
+                    print_height_mm=measured_height,
+                    height_offset_mm=0.0,
+                    alignment_side=data.get("alignment_side") or data.get("side"),
+                )
+                support_build_height = (
+                    float(resume_result["resume_z"])
+                    + float(resume_result["initial_layer_height"])
+                )
+            else:
+                support_clearance = 0.8
+
+            try:
+                result = build_landing_pad_gcode(
+                    original_gcode_text=gcode_text,
+                    park_position=park,
+                    include_supports=include_supports,
+                    include_support_interface=data.get("include_support_interface") is not False,
+                    support_build_height=support_build_height,
+                    support_clearance_mm=support_clearance,
+                    require_bed_connected_supports=True,
+                    support_only_extraction_mode="taggedOnly",
+                    insertion_side="auto",
+                )
+            except ValueError as exc:
+                return dict(ok=False, error=str(exc))
+
+            self._landing_pad_cache = result["landing_pad_text"]
+            self._landing_pad_source = source
+            self._landing_pad_filename = self._build_landing_pad_filename(source)
+
+            if self._is_moonraker_mode():
+                upload_result = self._moonraker_upload_gcode(
+                    self._landing_pad_filename,
+                    self._landing_pad_cache,
+                    print_immediately=True,
+                )
+                action_message = "Landing pad uploaded and print requested."
+            else:
+                self._printer.commands("M400")
+                self._printer.commands(self._landing_pad_cache.splitlines())
+                upload_result = None
+                action_message = "Landing pad print started through OctoPrint."
+
+            return dict(
+                ok=True,
+                first_layer_z=result["first_layer_z"],
+                landing_pad_height=result["landing_pad_height"],
+                move_count=result["move_count"],
+                preview=result["preview"],
+                park=result["park_position"],
+                file=source,
+                landing_pad_file_name=self._landing_pad_filename,
+                support_candidate_move_count=result["support_candidate_move_count"],
+                support_move_count=result["support_move_count"],
+                supports_included=result["supports_included"],
+                rejected_insertion_support_moves=result["rejected_insertion_support_moves"],
+                rejected_disconnected_support_moves=result["rejected_disconnected_support_moves"],
+                support_feature_labels=result["support_feature_labels"],
+                warnings=result["warnings"],
+                moonraker_result=upload_result,
+                message=action_message,
+            )
+
         if command == "build_resume":
             license_error = self._require_valid_license_for_output()
             if license_error is not None:
@@ -247,11 +337,17 @@ class LazarusPlugin(
             except Exception:
                 return dict(ok=False, error="Invalid measured height")
 
+            try:
+                height_offset = float(data.get("height_offset_mm") or 0.0)
+            except Exception:
+                return dict(ok=False, error="Invalid landing pad height offset")
+
             gcode_text, source = self._resolve_gcode_source(data)
             result = build_resumed_gcode(
                 original_gcode_text=gcode_text,
                 firmware=self._settings.get(["firmware_type"]),
                 print_height_mm=measured_height,
+                height_offset_mm=height_offset,
                 alignment_side=data.get("alignment_side") or data.get("side"),
             )
 
@@ -265,6 +361,8 @@ class LazarusPlugin(
                 layer_height=result["layer_height"],
                 initial_layer_height=result["initial_layer_height"],
                 adjusted_print_height=result["adjusted_print_height"],
+                height_offset=result["height_offset"],
+                measured_print_height=result["measured_print_height"],
                 resume_z=result["resume_z"],
                 alignment_side=result["alignment_side"],
                 datum=result["datum"],
@@ -576,6 +674,7 @@ class LazarusPlugin(
             )
 
         if command in (
+            "build_landing_pad",
             "build_resume",
             "safe_resume_homing",
             "apply_assumed_position",
@@ -1093,26 +1192,20 @@ class LazarusPlugin(
                 )
             raise ValueError(message)
 
-    def _moonraker_upload_resume(self):
-        resume_text = getattr(self, "_resume_cache", None)
-        if not resume_text:
-            return dict(ok=False, error="No resume built")
-
-        filename = getattr(self, "_resume_filename", "resume.gcode")
-        upload_and_print = self._get_bool_setting(["moonraker_upload_and_print"], False)
-        if upload_and_print:
+    def _moonraker_upload_gcode(self, filename, gcode_text, print_immediately=False):
+        if print_immediately:
             self._moonraker_require_klippy_connected()
 
         data = {
             "root": "gcodes",
         }
-        if upload_and_print:
+        if print_immediately:
             data["print"] = "true"
 
         files = {
             "file": (
                 filename,
-                io.BytesIO(resume_text.encode("utf-8")),
+                io.BytesIO(gcode_text.encode("utf-8")),
                 "application/octet-stream",
             )
         }
@@ -1125,11 +1218,30 @@ class LazarusPlugin(
         )
         item = result.get("item") if isinstance(result, dict) else {}
         uploaded_filename = (item or {}).get("path") or filename
-        action = "uploaded and print requested" if upload_and_print else "uploaded"
         return dict(
             ok=True,
             filename=uploaded_filename,
             moonraker_result=result,
+        )
+
+    def _moonraker_upload_resume(self):
+        resume_text = getattr(self, "_resume_cache", None)
+        if not resume_text:
+            return dict(ok=False, error="No resume built")
+
+        filename = getattr(self, "_resume_filename", "resume.gcode")
+        upload_and_print = self._get_bool_setting(["moonraker_upload_and_print"], False)
+        upload_result = self._moonraker_upload_gcode(
+            filename,
+            resume_text,
+            print_immediately=upload_and_print,
+        )
+        uploaded_filename = upload_result["filename"]
+        action = "uploaded and print requested" if upload_and_print else "uploaded"
+        return dict(
+            ok=True,
+            filename=uploaded_filename,
+            moonraker_result=upload_result.get("moonraker_result"),
             message="Resume GCODE {action}: {filename}".format(
                 action=action,
                 filename=uploaded_filename,
@@ -1209,6 +1321,14 @@ class LazarusPlugin(
         if not cleaned:
             cleaned = "resume"
         return cleaned + "_resume.gcode"
+
+    def _build_landing_pad_filename(self, source):
+        source_name = (source or {}).get("name") or "landing_pad"
+        stem, _extension = os.path.splitext(source_name)
+        cleaned = re.sub(r"[^A-Za-z0-9._-]+", "_", stem).strip("._")
+        if not cleaned:
+            cleaned = "landing_pad"
+        return cleaned + "_landing_pad.gcode"
 
     def _get_printer_zmax(self):
         try:

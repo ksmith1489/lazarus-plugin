@@ -20,6 +20,8 @@ G1 X110.08 E0.32 F3000
 G1 Y111.08 E13.12 F3000
 G1 X111.08 Z0
 G1 X114.08
+G1 X20 Y5 Z0.4 F30000
+G1 X220 Y5 E8 F1800
 G1 Z1 F600
 SET_PRINT_STATS_INFO CURRENT_LAYER=1
 ; MACHINE_START_GCODE_END
@@ -108,6 +110,46 @@ M204 S5000
 G1 X186.192 Y152.5 E.42295
 """
 
+TAGGED_SUPPORT_GCODE = """; layer_height = 0.2
+; first_layer_height = 0.2
+G90
+M83
+;LAYER:0
+G0 X0 Y0 Z0.2
+;TYPE:WALL-OUTER
+G1 X30 Y0 E1.0 F1200
+G1 X30 Y30 E1.0
+G1 X0 Y30 E1.0
+G1 X0 Y0 E1.0
+;TYPE:SUPPORT
+G0 X40 Y0
+G1 X42 Y0 E0.2
+G0 X10 Y10
+G1 X12 Y10 E0.2
+;LAYER:1
+G0 Z0.4
+;TYPE:WALL-OUTER
+G0 X8 Y8
+G1 X22 Y8 E0.5
+G1 X22 Y22 E0.5
+;TYPE:SUPPORT
+G0 X40 Y0
+G1 X42 Y0 E0.2
+G0 X25 Y10
+G1 X27 Y10 E0.2
+;TYPE:SUPPORT-INTERFACE
+G0 X55 Y0
+G1 X57 Y0 E0.2
+;LAYER:2
+G0 Z0.6
+;TYPE:WALL-OUTER
+G0 X10 Y10
+G1 X20 Y10 E0.4
+;TYPE:SUPPORT
+G0 X40 Y0
+G1 X42 Y0 E0.2
+"""
+
 
 class ResumeEngineRegressionTests(unittest.TestCase):
     def test_infer_layer_height_prefers_repeated_nominal_value(self) -> None:
@@ -139,6 +181,125 @@ class ResumeEngineRegressionTests(unittest.TestCase):
         self.assertIn("; Datum: X157.948 Y132.166 Z26.320", result["resumed_text"])
         self.assertNotIn("; Datum: X169.821 Y139.148 Z26.400", result["resumed_text"])
         self.assertIn("G1 X169.853 Y139.185 E.00468", result["resumed_text"])
+
+    def test_build_landing_pad_copies_first_printable_layer(self) -> None:
+        result = resume_engine.build_landing_pad_gcode(
+            SAMPLE_GCODE,
+            park_position=dict(x=90, y=290, z=250),
+        )
+
+        self.assertTrue(result["ok"])
+        self.assertAlmostEqual(result["first_layer_z"], 0.4, places=3)
+        self.assertAlmostEqual(result["landing_pad_height"], 0.4, places=3)
+        self.assertGreater(result["move_count"], 0)
+        self.assertIn("; MACHINE_START_GCODE_END", result["landing_pad_text"])
+        self.assertIn("; --- BEGIN COPIED SLICER START + FIRST LAYER ---", result["landing_pad_text"])
+        self.assertIn("G1 X128.951 Y183.656", result["landing_pad_text"])
+        self.assertIn("G1 E3 F1800", result["landing_pad_text"])
+        self.assertIn("G1 X128.513 Y183.32 E.06474", result["landing_pad_text"])
+        self.assertIn("G1 X220 Y5 E8", result["landing_pad_text"])
+        self.assertNotIn("; Z_HEIGHT: 0.72", result["landing_pad_text"])
+        self.assertNotIn("G1 X174.544 Y147.489 E-2.85", result["landing_pad_text"])
+        self.assertNotIn("G1 X169.853 Y139.185 E0.00470", result["landing_pad_text"])
+        self.assertNotIn("SET_PRINT_STATS_INFO CURRENT_LAYER=2", result["landing_pad_text"])
+        self.assertIn("G0 X90 Y290 F6000", result["landing_pad_text"])
+
+    def test_build_resumed_gcode_uses_landing_pad_height_offset(self) -> None:
+        result = resume_engine.build_resumed_gcode(
+            SAMPLE_GCODE,
+            firmware="klipper",
+            print_height_mm=26.8,
+            height_offset_mm=0.4,
+            alignment_side="left",
+        )
+
+        self.assertAlmostEqual(result["measured_print_height"], 26.8, places=3)
+        self.assertAlmostEqual(result["height_offset"], 0.4, places=3)
+        self.assertAlmostEqual(result["resume_z"], 26.32, places=3)
+        self.assertIn("; Landing pad height offset: 0.400 mm", result["resumed_text"])
+        self.assertIn("; Computed resume height (RH): 26.320 mm", result["resumed_text"])
+
+    def test_tagged_support_rebuild_outputs_compact_support_paths_only(self) -> None:
+        result = resume_engine.build_landing_pad_gcode(
+            TAGGED_SUPPORT_GCODE,
+            include_supports=True,
+            include_support_interface=True,
+            support_build_height=0.6,
+            support_clearance_mm=0.8,
+        )
+
+        self.assertEqual(result["support_move_count"], 2)
+        self.assertEqual(result["rejected_insertion_support_moves"], 2)
+        self.assertEqual(result["rejected_disconnected_support_moves"], 1)
+        self.assertIn("; --- BEGIN COMPACT TAGGED SUPPORT REBUILD ---", result["landing_pad_text"])
+        self.assertIn("G1 X42 Y0 E0.2", result["landing_pad_text"])
+        self.assertNotIn("G1 X22 Y8 E0.5", result["landing_pad_text"])
+        self.assertNotIn("G1 X57 Y0 E0.2", result["landing_pad_text"])
+
+    def test_tagged_support_rebuild_fails_clearly_without_support_labels(self) -> None:
+        with self.assertRaisesRegex(
+            ValueError,
+            "does not contain recognizable support feature labels",
+        ):
+            resume_engine.build_landing_pad_gcode(
+                SAMPLE_GCODE,
+                include_supports=True,
+                support_build_height=26.72,
+            )
+
+    def test_support_toggle_off_preserves_existing_landing_pad_output(self) -> None:
+        default_result = resume_engine.build_landing_pad_gcode(TAGGED_SUPPORT_GCODE)
+        disabled_result = resume_engine.build_landing_pad_gcode(
+            TAGGED_SUPPORT_GCODE,
+            include_supports=False,
+        )
+
+        self.assertEqual(
+            default_result["landing_pad_text"],
+            disabled_result["landing_pad_text"],
+        )
+        self.assertEqual(disabled_result["support_move_count"], 0)
+
+    def test_cumulative_wide_base_rejects_support_inside_lower_footprint(self) -> None:
+        result = resume_engine.build_landing_pad_gcode(
+            TAGGED_SUPPORT_GCODE,
+            include_supports=True,
+            support_build_height=0.6,
+            support_clearance_mm=0.8,
+        )
+
+        self.assertGreaterEqual(result["rejected_insertion_support_moves"], 2)
+        self.assertNotIn("G1 X27 Y10 E0.2", result["landing_pad_text"])
+
+    def test_support_interface_without_bed_root_is_rejected(self) -> None:
+        interface_only = """\
+;LAYER:0
+G90
+M82
+G1 Z0.2 F1200
+;TYPE:WALL-OUTER
+G1 X0 Y0 F3000
+G1 X10 Y0 E1 F1200
+G1 X10 Y10 E2
+G1 X0 Y10 E3
+G1 X0 Y0 E4
+;LAYER:1
+G1 Z0.4 F1200
+;TYPE:SUPPORT-INTERFACE
+G1 X40 Y40 F3000
+G1 X45 Y40 E5 F1200
+"""
+        result = resume_engine.build_landing_pad_gcode(
+            interface_only,
+            include_supports=True,
+            support_build_height=0.4,
+            support_clearance_mm=0.8,
+            require_bed_connected_supports=True,
+        )
+
+        self.assertEqual(result["support_move_count"], 0)
+        self.assertEqual(result["rejected_disconnected_support_moves"], 1)
+        self.assertNotIn("G1 X45 Y40 E", result["landing_pad_text"])
 
 
 if __name__ == "__main__":

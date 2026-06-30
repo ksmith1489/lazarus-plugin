@@ -205,6 +205,96 @@
                 </div>
             </div>
 
+            <div class="lazarus-print-state">
+                <div>
+                    <div class="lazarus-standard-label">Print state</div>
+                    <div class="lazarus-help-text">
+                        Choose Loose From Bed when the failed part must be glued back onto a freshly printed landing pad.
+                    </div>
+                </div>
+
+                <div class="lazarus-print-state-controls">
+                    <button class="btn lazarus-toggle-btn"
+                            type="button"
+                            data-bind="click: function () { setPrintState('stuck'); }, css: { 'is-enabled': !looseFromBed() }"
+                            title="Use the normal resume workflow for a print still attached to the build plate.">
+                        Stuck To Bed
+                    </button>
+
+                    <button class="btn lazarus-toggle-btn"
+                            type="button"
+                            data-bind="click: function () { setPrintState('loose'); }, css: { 'is-enabled': looseFromBed() }"
+                            title="Print a landing pad first, then glue the failed part into place.">
+                        Loose From Bed
+                    </button>
+                </div>
+            </div>
+
+            <div class="lazarus-loose-bed-flow" data-bind="visible: looseFromBed()">
+                <div class="lazarus-experimental-badge">Experimental</div>
+
+                <label class="checkbox lazarus-checkbox">
+                    <input type="checkbox"
+                           data-bind="checked: bedClearConfirmed">
+                    Confirm bed is clear before the slicer start sequence and landing pad print.
+                </label>
+
+                <label class="checkbox lazarus-checkbox">
+                    <input type="checkbox"
+                           data-bind="checked: includeLandingPadSupports">
+                    Print Landing Pad + optional - Supports
+                </label>
+
+                <div class="row-fluid" data-bind="visible: includeLandingPadSupports">
+                    <div class="span6">
+                        <label>Insertion Clearance (mm)</label>
+                        <input type="number"
+                               min="0"
+                               step="0.1"
+                               class="input-block-level lazarus-input"
+                               data-bind="value: supportClearance">
+                    </div>
+                    <div class="span6">
+                        <label class="checkbox lazarus-checkbox">
+                            <input type="checkbox"
+                                   data-bind="checked: includeSupportInterface">
+                            Include bed-connected support-interface paths
+                        </label>
+                    </div>
+                    <p class="lazarus-help-text">
+                        Tagged-only mode extracts compact support extrusion paths. Model toolpaths are not replayed.
+                        Enter the measured loose-print height below before starting.
+                    </p>
+                </div>
+
+                <div class="lazarus-landing-pad-actions">
+                    <button class="btn btn-large lazarus-action-btn"
+                            type="button"
+                            data-bind="click: buildLandingPad, enable: canBuildLandingPad()"
+                            title="Run the selected file's slicer start sequence and first layer as a landing pad.">
+                        Show Me Where To Glue It
+                    </button>
+
+                    <div class="lazarus-landing-pad-status"
+                         data-bind="text: landingPadStatusText"></div>
+                </div>
+
+                <div class="lazarus-help-text" data-bind="visible: includeLandingPadSupports">
+                    <strong data-bind="text: supportMoveCount"></strong> retained support moves;
+                    <strong data-bind="text: rejectedInsertionSupportMoves"></strong> rejected by insertion clearance;
+                    <strong data-bind="text: rejectedDisconnectedSupportMoves"></strong> rejected as disconnected.
+                    <div data-bind="foreach: supportWarnings">
+                        <div class="lazarus-critical-warning" data-bind="text: $data"></div>
+                    </div>
+                </div>
+
+                <label class="checkbox lazarus-checkbox">
+                    <input type="checkbox"
+                           data-bind="checked: printGluedInPlace, enable: landingPadBuilt()">
+                    The failed print is glued in place on the landing pad.
+                </label>
+            </div>
+
             <div class="row-fluid">
                 <div class="span6">
                     <label>Measured Print Height (mm)</label>
@@ -213,7 +303,7 @@
                            step="0.1"
                            class="input-block-level lazarus-input"
                            placeholder="22.0"
-                           data-bind="value: measuredHeight"
+                           data-bind="value: measuredHeight, disable: !canEnterMeasuredHeight()"
                            title="Measure the incomplete print and enter the lower of the two edge measurements.">
                 </div>
 
@@ -231,10 +321,13 @@
 
             <div class="lazarus-help-text">
                 Measure the left and right side of the incomplete print and enter the lower value to the nearest 0.1 mm.
+                <span data-bind="visible: looseFromBed()">
+                    Measure the loose print before building optional supports; after gluing, verify the total height from the bed.
+                </span>
             </div>
 
             <button class="btn btn-large btn-block lazarus-action-btn"
-                    data-bind="click: buildResume, enable: licenseValid() && !buildInProgress()"
+                    data-bind="click: buildResume, enable: canBuildResume()"
                     title="Generate a resume file and the alignment target.">
                 Build Resume G-code
             </button>

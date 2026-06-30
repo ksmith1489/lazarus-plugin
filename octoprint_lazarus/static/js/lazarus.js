@@ -16,6 +16,20 @@ $(function () {
         self.licenseMaxDevices = ko.observable(3);
         self.licenseModel = ko.observable("");
         self.installId = ko.observable("");
+        self.looseFromBed = ko.observable(false);
+        self.bedClearConfirmed = ko.observable(false);
+        self.printGluedInPlace = ko.observable(false);
+        self.includeLandingPadSupports = ko.observable(false);
+        self.includeSupportInterface = ko.observable(true);
+        self.supportClearance = ko.observable(0.8);
+        self.supportMoveCount = ko.observable(0);
+        self.rejectedInsertionSupportMoves = ko.observable(0);
+        self.rejectedDisconnectedSupportMoves = ko.observable(0);
+        self.supportWarnings = ko.observableArray([]);
+        self.landingPadBuilt = ko.observable(false);
+        self.landingPadHeight = ko.observable(0);
+        self.landingPadFileName = ko.observable("");
+        self.landingPadInProgress = ko.observable(false);
         self.measuredHeight = ko.observable("");
         self.alignmentSide = ko.observable("left");
         self.xyJogStep = ko.observable(1);
@@ -58,6 +72,40 @@ $(function () {
 
         self.canDownloadResume = ko.computed(function () {
             return self.resumeBuilt() && !!self.resumeFileName();
+        });
+
+        self.canEnterMeasuredHeight = ko.computed(function () {
+            return true;
+        });
+
+        self.canBuildLandingPad = ko.computed(function () {
+            var measuredHeight = parseFloat(self.measuredHeight());
+            var supportClearance = parseFloat(self.supportClearance());
+            var supportsReady = !self.includeLandingPadSupports() ||
+                (measuredHeight > 0 && supportClearance >= 0);
+            return self.looseFromBed() &&
+                self.bedClearConfirmed() &&
+                supportsReady &&
+                hasSelectedFile() &&
+                self.licenseValid() &&
+                !self.landingPadInProgress();
+        });
+
+        self.canBuildResume = ko.computed(function () {
+            return self.licenseValid() &&
+                !self.buildInProgress() &&
+                (!self.looseFromBed() || self.printGluedInPlace());
+        });
+
+        self.landingPadStatusText = ko.computed(function () {
+            if (self.landingPadInProgress()) {
+                return "Building and starting the landing pad print.";
+            }
+            if (self.landingPadBuilt()) {
+                return "Landing pad ready: " + (self.landingPadFileName() || "landing_pad.gcode") +
+                    " (" + parseFloat(self.landingPadHeight() || 0).toFixed(3) + " mm offset).";
+            }
+            return "No landing pad has been printed for this file yet.";
         });
 
         self.openActivationPage = function () {
@@ -241,6 +289,19 @@ $(function () {
             self.safeStartApplied(false);
         }
 
+        function resetLandingPadState() {
+            self.bedClearConfirmed(false);
+            self.printGluedInPlace(false);
+            self.landingPadBuilt(false);
+            self.landingPadHeight(0);
+            self.landingPadFileName("");
+            self.landingPadInProgress(false);
+            self.supportMoveCount(0);
+            self.rejectedInsertionSupportMoves(0);
+            self.rejectedDisconnectedSupportMoves(0);
+            self.supportWarnings([]);
+        }
+
         function isSupportedGcodeName(name) {
             var lower = (name || "").toLowerCase();
             return lower.endsWith(".gcode") ||
@@ -272,6 +333,7 @@ $(function () {
 
             if (selectionChanged) {
                 resetResumeState();
+                resetLandingPadState();
             }
         }
 
@@ -285,6 +347,7 @@ $(function () {
             self.uploadedServerFilePath = "";
             self.userSelectedFile = true;
             resetResumeState();
+            resetLandingPadState();
         }
 
         function clearSelectedFile(markAsUserChoice) {
@@ -306,6 +369,7 @@ $(function () {
 
             if (hadSelection) {
                 resetResumeState();
+                resetLandingPadState();
             }
         }
 
@@ -546,6 +610,56 @@ $(function () {
             notify("Resume G-code Ready", "The true alignment point has been calculated.", "notice");
         }
 
+        function handleBuildLandingPadSuccess(resp) {
+            if (!resp || !resp.ok) {
+                notify("Error", resp && resp.error ? resp.error : "Landing pad build failed", "error");
+                return;
+            }
+
+            if (resp.park) {
+                updateParkFields(resp.park);
+            }
+
+            if (resp.file && resp.file.name) {
+                self.selectedFileLabel(resp.file.name);
+            }
+
+            self.landingPadBuilt(true);
+            self.landingPadHeight(resp.landing_pad_height || 0);
+            self.landingPadFileName(resp.landing_pad_file_name || "landing_pad.gcode");
+            self.supportMoveCount(resp.support_move_count || 0);
+            self.rejectedInsertionSupportMoves(resp.rejected_insertion_support_moves || 0);
+            self.rejectedDisconnectedSupportMoves(resp.rejected_disconnected_support_moves || 0);
+            self.supportWarnings(resp.warnings || []);
+            self.printGluedInPlace(false);
+            resetResumeState();
+
+            notify(
+                "Landing Pad Started",
+                resp.message || "The first-layer landing pad print has been started.",
+                "notice"
+            );
+        }
+
+        function requestBuildLandingPad(payload) {
+            return api("build_landing_pad", payload)
+                .done(function (resp) {
+                    self.landingPadInProgress(false);
+                    handleBuildLandingPadSuccess(resp);
+                })
+                .fail(function (xhr) {
+                    self.landingPadInProgress(false);
+                    notify(
+                        "Error",
+                        getAjaxErrorMessage(
+                            xhr,
+                            "Landing pad build request failed. If you selected a large local G-code file, wait a few seconds and try again."
+                        ),
+                        "error"
+                    );
+                });
+        }
+
         function requestBuildResume(payload) {
             return api("build_resume", payload)
                 .done(function (resp) {
@@ -564,6 +678,17 @@ $(function () {
                     );
                 });
         }
+
+        self.setPrintState = function (state) {
+            var nextLooseFromBed = state === "loose";
+            if (self.looseFromBed() === nextLooseFromBed) {
+                return;
+            }
+
+            self.looseFromBed(nextLooseFromBed);
+            resetResumeState();
+            resetLandingPadState();
+        };
 
         self.loadAvailableFiles = function () {
             var loader = null;
@@ -702,8 +827,86 @@ $(function () {
             $(localFileInputSelector).trigger("click");
         };
 
+        self.buildLandingPad = function () {
+            var payload;
+
+            if (self.landingPadInProgress()) {
+                return;
+            }
+
+            if (!self.looseFromBed()) {
+                notify("Landing Pad", "Switch print state to Loose From Bed first.", "error");
+                return;
+            }
+
+            if (!hasSelectedFile()) {
+                notify("Input Error", "No file selected.", "error");
+                return;
+            }
+
+            if (!self.bedClearConfirmed()) {
+                notify("Safety Check", "Confirm the build plate is clear first.", "error");
+                return;
+            }
+
+            if (self.includeLandingPadSupports()) {
+                if (!(parseFloat(self.measuredHeight()) > 0)) {
+                    notify("Input Error", "Measured height is required to rebuild supports.", "error");
+                    return;
+                }
+                if (!(parseFloat(self.supportClearance()) >= 0)) {
+                    notify("Input Error", "Support clearance cannot be negative.", "error");
+                    return;
+                }
+            }
+
+            self.landingPadInProgress(true);
+            self.landingPadBuilt(false);
+            self.landingPadHeight(0);
+            self.landingPadFileName("");
+            self.printGluedInPlace(false);
+            resetResumeState();
+
+            payload = {
+                bed_clear_confirmed: true,
+                include_supports: self.includeLandingPadSupports(),
+                include_support_interface: self.includeSupportInterface(),
+                measured_height: parseFloat(self.measuredHeight()),
+                alignment_side: self.alignmentSide(),
+                support_clearance_mm: parseFloat(self.supportClearance())
+            };
+
+            if (self.selectedSourceType() === "device") {
+                uploadSelectedDeviceFile()
+                    .done(function (uploadInfo) {
+                        payload.file_path = uploadInfo.path;
+                        requestBuildLandingPad(payload);
+                    })
+                    .fail(function (xhr) {
+                        self.landingPadInProgress(false);
+                        notify(
+                            "Error",
+                            getAjaxErrorMessage(xhr, "Device file upload failed"),
+                            "error"
+                        );
+                    });
+                return;
+            }
+
+            if (self.selectedSourceType() === "octoprint") {
+                payload.file_path = self.selectedServerFilePath();
+            }
+
+            requestBuildLandingPad(payload);
+        };
+
         self.validateInputs = function () {
             var measuredHeight = parseFloat(self.measuredHeight());
+
+            if (self.looseFromBed() && !self.printGluedInPlace()) {
+                notify("Loose Bed Resume", "Print the landing pad and confirm the failed print is glued in place first.", "error");
+                return false;
+            }
 
             if (!measuredHeight || measuredHeight <= 0) {
                 notify("Input Error", "Measured height required", "error");
@@ -734,7 +937,8 @@ $(function () {
 
             payload = {
                 measured_height: parseFloat(self.measuredHeight()),
-                alignment_side: self.alignmentSide()
+                alignment_side: self.alignmentSide(),
+                height_offset_mm: self.looseFromBed() ? parseFloat(self.landingPadHeight() || 0) : 0
             };
 
             if (self.selectedSourceType() === "device") {

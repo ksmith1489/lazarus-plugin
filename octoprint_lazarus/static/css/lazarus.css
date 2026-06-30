@@ -78,6 +78,8 @@
 .lazarus-nav-right,
 .lazarus-resume-actions,
 .lazarus-file-selector-controls,
+.lazarus-print-state-controls,
+.lazarus-landing-pad-actions,
 .lazarus-failsafe-row {
     display: flex;
     flex-wrap: wrap;
@@ -189,6 +191,61 @@
 
 .lazarus-inputs-head {
     margin-bottom: 18px;
+}
+
+.lazarus-print-state {
+    align-items: center;
+    background: var(--lazarus-panel-alt);
+    border: 1px solid var(--lazarus-border);
+    border-radius: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: space-between;
+    margin: 0 0 16px;
+    padding: 14px;
+}
+
+.lazarus-print-state .lazarus-help-text {
+    margin: 0;
+}
+
+.lazarus-loose-bed-flow {
+    border: 1px solid var(--lazarus-border);
+    border-radius: 10px;
+    display: grid;
+    gap: 12px;
+    margin: 0 0 16px;
+    padding: 14px;
+}
+
+.lazarus-experimental-badge {
+    background: rgba(234, 179, 8, 0.14);
+    border: 1px solid rgba(234, 179, 8, 0.55);
+    border-radius: 999px;
+    color: #8a6500;
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    padding: 5px 9px;
+    text-transform: uppercase;
+    width: fit-content;
+}
+
+.lazarus-landing-pad-actions {
+    align-items: center;
+}
+
+.lazarus-landing-pad-actions .btn {
+    flex: 1 1 240px;
+}
+
+.lazarus-landing-pad-status {
+    color: var(--lazarus-muted);
+    flex: 2 1 260px;
+    line-height: 1.4;
 }
 
 .lazarus-file-selector-label,
@@ -524,6 +581,8 @@
     .lazarus-mode-controls,
     .lazarus-resume-actions,
     .lazarus-file-selector-controls,
+    .lazarus-print-state-controls,
+    .lazarus-landing-pad-actions,
     .lazarus-failsafe-row,
     .lazarus-license-actions {
         flex-direction: column;
