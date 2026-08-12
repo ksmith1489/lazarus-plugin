@@ -571,7 +571,7 @@
             </div>
 
             <div class="lazarus-alignment-check-panel"
-                 data-bind="visible: looseFromBed() && alignmentChecksUnlocked() && resumeLayerExtremePoints().length">
+                 data-bind="visible: !looseFromBed() && alignmentChecksUnlocked() && resumeLayerExtremePoints().length">
                 <div class="lazarus-control-head">
                     <h4>Optional Side Checks</h4>
                     <span class="lazarus-check-target-badge">Highlighted target locks position</span>
