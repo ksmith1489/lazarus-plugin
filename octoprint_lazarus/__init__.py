@@ -112,6 +112,7 @@ class LazarusPlugin(
             safe_resume_homing=[],
             apply_assumed_position=[],
             goto_datum=["x", "y"],
+            goto_alignment_check=["x", "y", "z"],
             jog_relative=["axis", "distance"],
             reset_alignment_z=[],
             lock_datum=["x", "y", "z"],
@@ -366,6 +367,8 @@ class LazarusPlugin(
                 resume_z=result["resume_z"],
                 alignment_side=result["alignment_side"],
                 datum=result["datum"],
+                datum_extreme_key=result.get("datum_extreme_key"),
+                resume_layer_extremes=result.get("resume_layer_extremes"),
                 preview=result["preview"],
                 park=self._get_control_park_position(),
                 file=source,
@@ -447,6 +450,23 @@ class LazarusPlugin(
 
             self._send_gcode_commands(commands)
             return dict(ok=True)
+
+        if command == "goto_alignment_check":
+            x = float(data.get("x"))
+            y = float(data.get("y"))
+            z = float(data.get("z"))
+            safe_z = z + 5.0
+            commands = [
+                "G90",
+                "G0 Z{z} F600".format(z=self._format_gcode_value(safe_z)),
+                "G0 X{x} Y{y} F6000".format(
+                    x=self._format_gcode_value(x),
+                    y=self._format_gcode_value(y),
+                ),
+            ]
+
+            self._send_gcode_commands(commands)
+            return dict(ok=True, safe_z=round(safe_z, 3))
 
         if command == "jog_relative":
             axis = str(data.get("axis") or "").strip().lower()
@@ -679,6 +699,7 @@ class LazarusPlugin(
             "safe_resume_homing",
             "apply_assumed_position",
             "goto_datum",
+            "goto_alignment_check",
             "jog_relative",
             "reset_alignment_z",
             "lock_datum",

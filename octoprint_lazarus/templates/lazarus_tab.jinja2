@@ -570,6 +570,39 @@
                 </div>
             </div>
 
+            <div class="lazarus-alignment-check-panel"
+                 data-bind="visible: looseFromBed() && alignmentChecksUnlocked() && resumeLayerExtremePoints().length">
+                <div class="lazarus-control-head">
+                    <h4>Optional Side Checks</h4>
+                    <span class="lazarus-check-target-badge">Highlighted target locks position</span>
+                </div>
+
+                <p class="lazarus-help-text"
+                   data-bind="text: alignmentCheckStatusText"></p>
+
+                <div class="lazarus-check-point-grid"
+                     data-bind="foreach: resumeLayerExtremePoints">
+                    <button class="btn lazarus-check-point-btn"
+                            type="button"
+                            data-bind="
+                                click: function () { $parent.moveToAlignmentCheckPoint($data); },
+                                enable: !$parent.alignmentCheckInProgress(),
+                                css: {
+                                    'is-target': isDatum,
+                                    'is-last': key === $parent.lastAlignmentCheckPointKey()
+                                }">
+                        <span data-bind="text: label"></span>
+                        <strong>
+                            X<span data-bind="text: formattedX"></span>
+                            Y<span data-bind="text: formattedY"></span>
+                        </strong>
+                        <small>
+                            Z check <span data-bind="text: formattedSafeZ"></span>
+                        </small>
+                    </button>
+                </div>
+            </div>
+
             <div class="lazarus-failsafe-row">
                 <button class="btn lazarus-failsafe-btn"
                         type="button"
@@ -583,7 +616,7 @@
                 <p class="lazarus-disclaimer">When X, Y, and Z are aligned to the print, lock the position and add a safe Z hop.</p>
                 <button class="btn btn-large btn-block lazarus-action-btn"
                         type="button"
-                        data-bind="click: lockDatum"
+                        data-bind="click: lockDatum, enable: canLockDatum()"
                         title="Lock the calibrated position and raise Z by the configured safe hop.">
                     Position Calibrated
                 </button>

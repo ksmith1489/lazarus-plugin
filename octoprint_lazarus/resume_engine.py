@@ -377,6 +377,38 @@ def choose_alignment_datum(points: List[ResumeDatum], alignment_side: str, resum
     return ResumeDatum(x=float(target_x), y=float(chosen_point.y), z=float(resume_z))
 
 
+def create_extreme_point_set(
+    points: List[ResumeDatum],
+    *,
+    resume_z: float,
+    datum_key: str,
+) -> Dict[str, Dict[str, Any]]:
+    if not points:
+        raise ValueError("Could not find layer points for the requested alignment checks.")
+
+    by_min_x = min(points, key=lambda point: (point.x, point.y))
+    by_max_x = min(points, key=lambda point: (-point.x, point.y))
+    by_min_y = min(points, key=lambda point: (point.y, point.x))
+    by_max_y = min(points, key=lambda point: (-point.y, point.x))
+
+    def to_extreme_point(point: ResumeDatum, key: str, label: str) -> Dict[str, Any]:
+        return dict(
+            key=key,
+            label=label,
+            x=round(float(point.x), 3),
+            y=round(float(point.y), 3),
+            z=round(float(resume_z), 3),
+            is_datum=(key == datum_key),
+        )
+
+    return dict(
+        x_min=to_extreme_point(by_min_x, "x_min", "X Min"),
+        x_max=to_extreme_point(by_max_x, "x_max", "X Max"),
+        y_min=to_extreme_point(by_min_y, "y_min", "Y Min"),
+        y_max=to_extreme_point(by_max_y, "y_max", "Y Max"),
+    )
+
+
 def _replace_e_value(line: str, new_e: float) -> str:
     if ";" in line:
         code_part, comment = line.split(";", 1)
@@ -1222,6 +1254,12 @@ def build_resumed_gcode(
         z_match_tol=z_match_tol,
     )
     datum = choose_alignment_datum(layer_points, normalized_side, resume_z)
+    datum_extreme_key = "x_max" if normalized_side == "right" else "x_min"
+    resume_layer_extremes = create_extreme_point_set(
+        layer_points,
+        resume_z=resume_z,
+        datum_key=datum_extreme_key,
+    )
 
     detected_mode = "absolute"
     last_e_abs = 0.0
@@ -1376,6 +1414,8 @@ def build_resumed_gcode(
             z=float(datum.z),
             alignment_side=normalized_side,
         ),
+        datum_extreme_key=datum_extreme_key,
+        resume_layer_extremes=resume_layer_extremes,
         preview=preview_buf,
         resumed_text="\n".join(out_lines) + "\n",
     )
