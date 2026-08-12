@@ -44,6 +44,11 @@ $(function () {
         self.datumX = ko.observable("");
         self.datumY = ko.observable("");
         self.datumZ = ko.observable("");
+        self.datumExtremeKey = ko.observable("");
+        self.resumeLayerExtremePoints = ko.observableArray([]);
+        self.alignmentChecksUnlocked = ko.observable(false);
+        self.alignmentCheckInProgress = ko.observable(false);
+        self.lastAlignmentCheckPointKey = ko.observable("");
         self.parkX = ko.observable("");
         self.parkY = ko.observable("");
         self.parkZ = ko.observable("");
@@ -95,6 +100,34 @@ $(function () {
             return self.licenseValid() &&
                 !self.buildInProgress() &&
                 (!self.looseFromBed() || self.printGluedInPlace());
+        });
+
+        self.canLockDatum = ko.computed(function () {
+            if (!self.resumeBuilt()) {
+                return false;
+            }
+
+            if (!self.alignmentChecksUnlocked()) {
+                return true;
+            }
+
+            if (!self.datumExtremeKey() || !self.resumeLayerExtremePoints().length) {
+                return true;
+            }
+
+            return self.lastAlignmentCheckPointKey() === self.datumExtremeKey();
+        });
+
+        self.alignmentCheckStatusText = ko.computed(function () {
+            if (!self.alignmentChecksUnlocked()) {
+                return "";
+            }
+
+            if (self.lastAlignmentCheckPointKey() === self.datumExtremeKey()) {
+                return "Highlighted alignment point reached. Position Calibrated is available for the final lock.";
+            }
+
+            return "Optional: check the side points, then return to the highlighted alignment point before locking again.";
         });
 
         self.landingPadStatusText = ko.computed(function () {
@@ -275,11 +308,65 @@ $(function () {
             self.moonrakerMode(normalized === "moonraker");
         }
 
+        function formatCoordinate(value) {
+            var number = parseFloat(value);
+            return isFinite(number) ? number.toFixed(3) : "";
+        }
+
+        function createExtremePointList(extremes, datumKey) {
+            var order = ["x_min", "x_max", "y_min", "y_max"];
+            var points = [];
+
+            $.each(order, function (_index, key) {
+                var point = extremes && extremes[key];
+                var x;
+                var y;
+                var z;
+
+                if (!point) {
+                    return;
+                }
+
+                x = parseFloat(point.x);
+                y = parseFloat(point.y);
+                z = parseFloat(point.z);
+
+                if (!isFinite(x) || !isFinite(y) || !isFinite(z)) {
+                    return;
+                }
+
+                points.push({
+                    key: point.key || key,
+                    label: point.label || key.replace("_", " ").toUpperCase(),
+                    x: x,
+                    y: y,
+                    z: z,
+                    safeZ: z + 5,
+                    formattedX: formatCoordinate(x),
+                    formattedY: formatCoordinate(y),
+                    formattedZ: formatCoordinate(z),
+                    formattedSafeZ: formatCoordinate(z + 5),
+                    isDatum: point.is_datum === true || key === datumKey
+                });
+            });
+
+            return points;
+        }
+
+        function resetAlignmentCheckState() {
+            self.alignmentChecksUnlocked(false);
+            self.alignmentCheckInProgress(false);
+            self.lastAlignmentCheckPointKey("");
+        }
+
         function resetResumeState() {
             self.resumeBuilt(false);
             self.datumX("");
             self.datumY("");
             self.datumZ("");
+            self.datumExtremeKey("");
+            self.resumeLayerExtremePoints([]);
+            resetAlignmentCheckState();
             self.previewText("");
             self.resumeFileName("");
             self.buildInProgress(false);
@@ -592,7 +679,15 @@ $(function () {
                 self.datumX(resp.datum.x != null ? resp.datum.x : "");
                 self.datumY(resp.datum.y != null ? resp.datum.y : "");
                 self.datumZ(resp.datum.z != null ? resp.datum.z : "");
+                self.datumExtremeKey(resp.datum_extreme_key ||
+                    (resp.datum.alignment_side === "right" ? "x_max" : "x_min"));
             }
+
+            self.resumeLayerExtremePoints(createExtremePointList(
+                resp.resume_layer_extremes,
+                self.datumExtremeKey()
+            ));
+            resetAlignmentCheckState();
 
             if (resp.park) {
                 updateParkFields(resp.park);
@@ -1018,6 +1113,7 @@ $(function () {
         };
 
         self.goToDatum = function () {
+            resetAlignmentCheckState();
             $("#alignment-step-modal").modal("show");
 
             api("goto_datum", {
@@ -1042,6 +1138,45 @@ $(function () {
                 });
         };
 
+        self.moveToAlignmentCheckPoint = function (point) {
+            if (!point) {
+                return;
+            }
+
+            if (!self.alignmentChecksUnlocked()) {
+                notify("Position Calibrated", "Lock the initial alignment before using side check moves.", "notice");
+                return;
+            }
+
+            self.alignmentCheckInProgress(true);
+            api("goto_alignment_check", {
+                x: point.x,
+                y: point.y,
+                z: point.z
+            })
+                .done(function (resp) {
+                    if (!resp || resp.ok !== true) {
+                        notify("Check Move", resp && resp.error ? resp.error : "Check move failed", "error");
+                        return;
+                    }
+
+                    self.lastAlignmentCheckPointKey(point.key);
+                    self.motionAcknowledged(false);
+
+                    notify(
+                        "Alignment Check",
+                        point.label + " reached at Z" + formatCoordinate(resp.safe_z || point.safeZ) + ".",
+                        point.isDatum ? "success" : "notice"
+                    );
+                })
+                .fail(function (xhr) {
+                    notify("Check Move", getAjaxErrorMessage(xhr, "Check move failed"), "error");
+                })
+                .always(function () {
+                    self.alignmentCheckInProgress(false);
+                });
+        };
+
         self.resetAlignmentZ = function () {
             api("reset_alignment_z")
                 .done(function (resp) {
@@ -1058,6 +1193,15 @@ $(function () {
         };
 
         self.lockDatum = function () {
+            if (!self.canLockDatum()) {
+                notify(
+                    "Position Calibrated",
+                    "Return to the highlighted alignment point before locking the calibrated position.",
+                    "notice"
+                );
+                return;
+            }
+
             api("lock_datum", {
                 x: self.datumX(),
                 y: self.datumY(),
@@ -1069,6 +1213,18 @@ $(function () {
                         return;
                     }
 
+                    if (!self.alignmentChecksUnlocked() && self.looseFromBed() && self.resumeLayerExtremePoints().length) {
+                        self.alignmentChecksUnlocked(true);
+                        self.lastAlignmentCheckPointKey("");
+                        notify(
+                            "Position Calibrated",
+                            "Initial coordinates locked. Optional side checks are now available.",
+                            "success"
+                        );
+                        return;
+                    }
+
+                    resetAlignmentCheckState();
                     $("#alignment-step-modal").modal("hide");
                     notify("Alignment Locked", resp.message || "True alignment point locked. You may now set the nozzle temperature.", "success");
                 })
