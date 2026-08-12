@@ -107,6 +107,10 @@ $(function () {
                 return false;
             }
 
+            if (self.looseFromBed()) {
+                return true;
+            }
+
             if (!self.alignmentChecksUnlocked()) {
                 return true;
             }
@@ -1143,7 +1147,7 @@ $(function () {
                 return;
             }
 
-            if (!self.alignmentChecksUnlocked()) {
+            if (self.looseFromBed() || !self.alignmentChecksUnlocked()) {
                 notify("Position Calibrated", "Lock the initial alignment before using side check moves.", "notice");
                 return;
             }
@@ -1213,7 +1217,7 @@ $(function () {
                         return;
                     }
 
-                    if (!self.alignmentChecksUnlocked() && self.looseFromBed() && self.resumeLayerExtremePoints().length) {
+                    if (!self.alignmentChecksUnlocked() && !self.looseFromBed() && self.resumeLayerExtremePoints().length) {
                         self.alignmentChecksUnlocked(true);
                         self.lastAlignmentCheckPointKey("");
                         notify(
