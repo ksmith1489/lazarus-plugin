@@ -217,7 +217,7 @@ $(function () {
             }
 
             if (!engineUrl || engineUrl === ("https://app." + "lazarus3dprint.com")) {
-                engineUrl = "https://wizard.lazarus3dprint.com";
+                engineUrl = "https://3dprintsaver.com";
             }
 
             return engineUrl.replace(/\/+$/, "");
@@ -1272,7 +1272,7 @@ $(function () {
                         return;
                     }
 
-                    notify("The Helm", resp.message || "Resume sequence started", "success");
+                    notify("3DPrintSaver.com", resp.message || "Resume sequence started", "success");
                 })
                 .fail(function (xhr) {
                     notify("Error", getAjaxErrorMessage(xhr, "Resume failed"), "error");

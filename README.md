@@ -1,6 +1,6 @@
-# The Helm
+# 3DPrintSaver.com
 
-The Helm helps recover failed 3D prints whether the partial print is still attached or must be carefully re-seated on the bed.
+3DPrintSaver.com helps recover failed 3D prints whether the partial print is still attached or must be carefully re-seated on the bed.
 
 It generates resume G-code locally inside OctoPrint from the original G-code file, the measured print height, and the detected layer structure of that file. The plugin then guides the user through safe alignment before resuming.
 
@@ -50,7 +50,7 @@ Typical use looks like this:
 
 ## Firmware Support
 
-The Helm supports:
+3DPrintSaver.com supports:
 
 - standard OctoPrint printer communication;
 - Marlin-based printers;
@@ -67,16 +67,16 @@ License v2 activation uses checkout email + license key + install ID. Existing i
 
 Activation, pricing, and legal information:
 
-- Activation: https://wizard.lazarus3dprint.com/activate
-- License: https://wizard.lazarus3dprint.com/license
-- Terms: https://wizard.lazarus3dprint.com/terms
-- Privacy: https://wizard.lazarus3dprint.com/privacy
+- Activation: https://3dprintsaver.com/activate
+- License: https://3dprintsaver.com/license
+- Terms: https://3dprintsaver.com/terms
+- Privacy: https://3dprintsaver.com/privacy
 
 ## Source And Support
 
 - Source: https://github.com/ksmith1489/lazarus-plugin
-- Product site: https://wizard.lazarus3dprint.com
-- Support: failed.print.resume.wizard@proton.me
+- Product site: https://3dprintsaver.com
+- Support: Ken@3dprintsaver.com
 
 ## Development Notes
 

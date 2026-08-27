@@ -1,10 +1,10 @@
-The Helm Proprietary Software License
-Copyright (c) 2026 The Helm. All rights reserved.
+3DPrintSaver.com Proprietary Software License
+Copyright (c) 2026 3DPrintSaver.com. All rights reserved.
 
 Patent Pending.
 
 This software is licensed, not sold. Subject to your compliance with the
-applicable Terms of Service, The Helm grants you a limited,
+applicable Terms of Service, 3DPrintSaver.com grants you a limited,
 non-exclusive, non-transferable, non-sublicensable, revocable license to
 install and use this software solely for your own internal 3D printing use.
 
@@ -27,7 +27,7 @@ any kind, express or implied, to the fullest extent permitted by law,
 including without limitation implied warranties of merchantability, fitness
 for a particular purpose, title, and non-infringement.
 
-To the fullest extent permitted by law, The Helm shall not
+To the fullest extent permitted by law, 3DPrintSaver.com shall not
 be liable for any indirect, incidental, special, consequential, exemplary, or
 punitive damages, or any loss of data, profits, revenue, business, goodwill,
 or use, arising out of or related to the software or its use.
@@ -41,6 +41,6 @@ Use of cloud-connected functionality, including checkout, activation, and
 license validation, is also subject to the Terms of Service and Privacy Policy.
 
 For licensing questions, partnership inquiries, or OEM/manufacturer licensing,
-contact: failed.print.resume.wizard@proton.me
+contact: Ken@3dprintsaver.com
 
-Current license page: https://wizard.lazarus3dprint.com/license
+Current license page: https://3dprintsaver.com/license
