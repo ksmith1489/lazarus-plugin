@@ -18,8 +18,8 @@ from .resume_engine import build_landing_pad_gcode, build_resumed_gcode
 
 
 MONTH_SECONDS = 30 * 24 * 60 * 60
-PRODUCT_NAME = "The Helm"
-DEFAULT_ENGINE_URL = "https://wizard.lazarus3dprint.com"
+PRODUCT_NAME = "3DPrintSaver.com"
+DEFAULT_ENGINE_URL = "https://3dprintsaver.com"
 LEGACY_ENGINE_URL = "https://app." + "lazarus3dprint.com"
 LEGACY_PLUGIN_ID = "octogoat"
 INSTALL_ID_FILENAME = "install_id.json"
@@ -614,7 +614,7 @@ class LazarusPlugin(
     def _get_moonraker_base_url(self):
         base_url = str(self._settings.get(["moonraker_url"]) or "").strip()
         if not base_url:
-            raise ValueError("Moonraker URL missing. Add it in The Helm settings.")
+            raise ValueError("Moonraker URL missing. Add it in 3DPrintSaver.com settings.")
 
         if "://" not in base_url:
             base_url = "http://" + base_url
@@ -624,7 +624,7 @@ class LazarusPlugin(
         try:
             parsed_port = parsed.port
         except ValueError:
-            raise ValueError("Moonraker URL has an invalid port. Check the URL in The Helm settings.")
+            raise ValueError("Moonraker URL has an invalid port. Check the URL in 3DPrintSaver.com settings.")
 
         if parsed_port is None and normalized_path in ("", "/"):
             hostname = parsed.hostname or ""
@@ -678,7 +678,7 @@ class LazarusPlugin(
         if command == "status":
             return self._require_permission(
                 Permissions.STATUS,
-                "Viewing The Helm status requires OctoPrint's Status permission.",
+                "Viewing 3DPrintSaver.com status requires OctoPrint's Status permission.",
             )
 
         if command in (
@@ -690,7 +690,7 @@ class LazarusPlugin(
         ):
             return self._require_permission(
                 Permissions.SETTINGS,
-                "This The Helm action requires OctoPrint's Settings Admin permission.",
+                "This 3DPrintSaver.com action requires OctoPrint's Settings Admin permission.",
             )
 
         if command in (
@@ -707,7 +707,7 @@ class LazarusPlugin(
         ):
             return self._require_permission(
                 Permissions.CONTROL,
-                "This The Helm action requires OctoPrint's Control permission.",
+                "This 3DPrintSaver.com action requires OctoPrint's Control permission.",
             )
 
         return None
@@ -1037,7 +1037,7 @@ class LazarusPlugin(
             return dict(
                 valid=False,
                 source="local",
-                error="The Helm install ID is missing. Re-save the plugin settings and try again.",
+                error="3DPrintSaver.com install ID is missing. Re-save the plugin settings and try again.",
             )
 
         engine_url = self._get_engine_url()
@@ -1053,7 +1053,7 @@ class LazarusPlugin(
             return dict(
                 valid=False,
                 source="remote",
-                error="The Helm could not reach the license service. Connect to the internet and try again.",
+                error="3DPrintSaver.com could not reach the license service. Connect to the internet and try again.",
             )
 
         if response.status_code != 200:
@@ -1079,7 +1079,7 @@ class LazarusPlugin(
 
         return self._error_response(
             status.get("error")
-            or "An active The Helm subscription is required before generating or using resume output.",
+            or "An active 3DPrintSaver.com subscription is required before generating or using resume output.",
             status_code=402,
             activation_url=self._build_activation_url(),
         )
@@ -1142,7 +1142,7 @@ class LazarusPlugin(
         self._logger.debug("Moonraker response: %s %s", response.status_code, path)
 
         if response.status_code in (401, 403):
-            raise ValueError("Moonraker authentication failed. Check the API key in The Helm settings.")
+            raise ValueError("Moonraker authentication failed. Check the API key in 3DPrintSaver.com settings.")
         if response.status_code >= 400:
             raise ValueError(self._extract_moonraker_error(response, payload))
 

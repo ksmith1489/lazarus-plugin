@@ -29,15 +29,39 @@
 
 .lazarus-hero {
     margin-bottom: 16px;
-    padding: 0;
+    padding: 12px;
     overflow: hidden;
     background: #020b13;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .lazarus-brand-banner {
     display: block;
-    width: 100%;
+    width: min(100%, 540px);
+    max-height: min(62vh, 560px);
     height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.lazarus-wordmark {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    margin: 0 0 10px;
+    color: #1f2933;
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.lazarus-wordmark strong {
+    color: #d95f11;
+    font: inherit;
 }
 
 .lazarus-title {

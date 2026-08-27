@@ -2,7 +2,7 @@ version: "3"
 
 tasks:
   test:
-    desc: Run the The Helm resume engine regression tests
+    desc: Run the 3DPrintSaver.com resume engine regression tests
     cmds:
       - python3 -m unittest tests.test_resume_engine
 

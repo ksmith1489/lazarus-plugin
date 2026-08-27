@@ -3,11 +3,11 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "OctoPrint-The-Helm"
-version = "2.0.1"
-description = "The Helm recovers failed prints that are still attached or must be re-seated on the bed."
+name = "OctoPrint-3DPrintSaver"
+version = "2.0.2"
+description = "3DPrintSaver.com recovers failed prints that are still attached or must be re-seated on the bed."
 authors = [
-    {name = "Kenneth B Smith", email = "failed.print.resume.wizard@proton.me"}
+    {name = "Kenneth B Smith", email = "Ken@3dprintsaver.com"}
 ]
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.7, <4"
@@ -31,6 +31,6 @@ octoprint_lazarus = [
 lazarus = "octoprint_lazarus"
 
 [project.urls]
-Homepage = "https://wizard.lazarus3dprint.com"
+Homepage = "https://3dprintsaver.com"
 Source = "https://github.com/ksmith1489/lazarus-plugin"
-Documentation = "https://wizard.lazarus3dprint.com/activate"
+Documentation = "https://3dprintsaver.com/install"

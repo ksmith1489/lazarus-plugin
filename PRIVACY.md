@@ -1,14 +1,14 @@
-# The Helm Privacy Policy
+# 3DPrintSaver.com Privacy Policy
 
 Effective date: April 22, 2026
 
 ## 1. Overview
 
-This Privacy Policy explains what information The Helm collects and how it is used.
+This Privacy Policy explains what information 3DPrintSaver.com collects and how it is used.
 
 ## 2. Information we collect
 
-Depending on the feature being used, The Helm may process:
+Depending on the feature being used, 3DPrintSaver.com may process:
 
 - installation identifier;
 - checkout email and license key for activation;
@@ -18,7 +18,7 @@ Depending on the feature being used, The Helm may process:
 - basic service logs needed for activation, validation, debugging, and abuse prevention;
 - billing-related information handled by Stripe and its checkout tools.
 
-The Helm does not sell personal data.
+3DPrintSaver.com does not sell personal data.
 
 ## 3. Local print files
 
@@ -43,7 +43,7 @@ We use limited data to:
 
 ## 6. Data sharing
 
-We share data only with service providers needed to operate The Helm, such as Stripe for payment processing and hosting providers, or when required by law.
+We share data only with service providers needed to operate 3DPrintSaver.com, such as Stripe for payment processing and hosting providers, or when required by law.
 
 ## 7. Data retention
 
@@ -59,4 +59,4 @@ We may update this Privacy Policy from time to time. Continued use after an upda
 
 ## 10. Contact
 
-Privacy questions: failed.print.resume.wizard@proton.me
+Privacy questions: Ken@3dprintsaver.com
