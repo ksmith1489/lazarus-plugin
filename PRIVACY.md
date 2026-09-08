@@ -14,6 +14,7 @@ Depending on the feature being used, 3DPrintSaver.com may process:
 - checkout email and license key for activation;
 - device type, device label, activation time, and last validation time;
 - license / subscription status data;
+- creator/tester grant status and expiration when applicable;
 - affiliate or referral code when supplied at checkout;
 - basic service logs needed for activation, validation, debugging, and abuse prevention;
 - billing-related information handled by Stripe and its checkout tools.

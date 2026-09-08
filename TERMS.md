@@ -14,7 +14,7 @@ One subscription may activate the web app, Android app, and OctoPrint plugin on 
 
 ## 3. Subscription and billing
 
-Access to resume output requires an active paid subscription. Subscriptions renew automatically unless canceled. Pricing, billing intervals, and promotional terms are shown at checkout.
+Access to resume output requires an active paid subscription or an individually issued creator/tester grant. Subscriptions renew automatically unless canceled. Pricing, billing intervals, and promotional terms are shown at checkout. The one-print Recovery Pass is not offered for the OctoPrint plugin in this release.
 
 ## 4. Acceptable use
 

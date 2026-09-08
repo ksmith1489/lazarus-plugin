@@ -834,6 +834,8 @@ class LazarusPlugin(
                 source="cache",
                 validated_at=validated_at,
                 expires_at=expires_at,
+                access_expires_at=cache.get("access_expires_at"),
+                access_kind=cache.get("access_kind"),
                 license_model=cache.get("license_model"),
                 device_count=cache.get("device_count"),
                 max_devices=cache.get("max_devices"),
@@ -847,15 +849,26 @@ class LazarusPlugin(
 
         install_id = self._get_install_id()
         expires_at = now + MONTH_SECONDS
+        access_expires_at = payload.get("access_expires_at") if isinstance(payload, dict) else None
+        cache_expires_at = payload.get("cache_expires_at") if isinstance(payload, dict) else None
+        try:
+            server_deadline = int(cache_expires_at or access_expires_at or 0)
+        except (TypeError, ValueError):
+            server_deadline = 0
+        if server_deadline > 0:
+            expires_at = min(expires_at, server_deadline)
         device_count = payload.get("device_count") if isinstance(payload, dict) else None
         max_devices = payload.get("max_devices") if isinstance(payload, dict) else None
         license_model = payload.get("license_model") if isinstance(payload, dict) else None
+        access_kind = payload.get("license_kind") if isinstance(payload, dict) else None
 
         self._save_license_cache(
             dict(
                 install_id=install_id,
                 validated_at=now,
                 expires_at=expires_at,
+                access_expires_at=access_expires_at,
+                access_kind=access_kind,
                 license_model=license_model,
                 device_count=device_count,
                 max_devices=max_devices,
@@ -866,6 +879,8 @@ class LazarusPlugin(
             source=source,
             validated_at=now,
             expires_at=expires_at,
+            access_expires_at=access_expires_at,
+            access_kind=access_kind,
             license_model=license_model,
             device_count=device_count,
             max_devices=max_devices,
