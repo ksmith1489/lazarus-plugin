@@ -65,7 +65,7 @@ One subscription activates the web app, Android app, and OctoPrint plugin on up 
 
 License v2 activation uses checkout email + license key + install ID. Existing install-ID-only validation remains supported for older installs.
 
-The one-print Recovery Pass is not sold for the OctoPrint path in this release. The plugin continues to accept subscriptions and individually issued creator/tester grants, and bounds its local validation cache to any server-provided grant expiration.
+The plugin accepts subscriptions and individually issued creator/tester grants, and bounds its local validation cache to any server-provided grant expiration.
 
 Activation, pricing, and legal information:
 
