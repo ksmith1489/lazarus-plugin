@@ -11,6 +11,11 @@ tasks:
     cmds:
       - python3 -m compileall octoprint_lazarus
 
+  package:
+    desc: Build the versioned OctoPrint source package on Windows
+    cmds:
+      - powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-plugin.ps1
+
   clean:
     desc: Remove local Python cache directories
     cmds:
