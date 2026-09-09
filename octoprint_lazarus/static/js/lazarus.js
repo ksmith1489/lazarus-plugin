@@ -1373,6 +1373,12 @@ $(function () {
                 return;
             }
 
+            var portalWindow = window.open("about:blank", "_blank");
+            if (!portalWindow) {
+                notify("Subscription", "Allow pop-ups for OctoPrint, then try Manage Subscription again.", "notice");
+                return;
+            }
+
             self.licenseBusy(true);
             api("manage_subscription", {
                 email: email,
@@ -1382,15 +1388,18 @@ $(function () {
                     self.licenseBusy(false);
 
                     if (!resp || resp.ok !== true || !resp.portal_url) {
+                        portalWindow.close();
                         notify("Subscription", resp && resp.error ? resp.error : "Subscription management failed.", "error");
                         return;
                     }
 
-                    window.open(resp.portal_url, "_blank", "noopener,noreferrer");
+                    portalWindow.opener = null;
+                    portalWindow.location.href = resp.portal_url;
                     notify("Subscription", "Stripe Billing Portal opened in a new tab.", "success");
                 })
                 .fail(function (xhr) {
                     self.licenseBusy(false);
+                    portalWindow.close();
                     notify("Subscription", getAjaxErrorMessage(xhr, "Subscription management failed."), "error");
                 });
         };
