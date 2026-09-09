@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 import sys
 import types
+from unittest import mock
 
 
 octoprint = types.ModuleType("octoprint")
@@ -29,6 +30,14 @@ class DummyPlugin:
 
     def _save_license_cache(self, payload):
         self.saved = payload
+
+
+class DummySettings:
+    def __init__(self, values=None):
+        self.values = values or {}
+
+    def get(self, path):
+        return self.values.get(path[0])
 
 
 class LicenseCacheTests(unittest.TestCase):
@@ -64,6 +73,47 @@ class LicenseCacheTests(unittest.TestCase):
         )
 
         self.assertEqual(status["expires_at"], now + MONTH_SECONDS)
+
+    def test_manage_subscription_creates_billing_portal_session(self):
+        plugin = LazarusPlugin()
+        plugin._settings = DummySettings(
+            {
+                "engine_url": "https://3dprintsaver.com/",
+                "license_email": "buyer@example.com",
+                "license_key": "license-key",
+            }
+        )
+        response = mock.Mock(status_code=200)
+        response.json.return_value = {
+            "ok": True,
+            "portal_url": "https://billing.stripe.test/session",
+        }
+
+        with mock.patch("octoprint_lazarus.requests.post", return_value=response) as post:
+            result = plugin._manage_subscription({})
+
+        self.assertEqual(result["portal_url"], "https://billing.stripe.test/session")
+        post.assert_called_once_with(
+            "https://3dprintsaver.com/manage-subscription",
+            json={
+                "email": "buyer@example.com",
+                "license_key": "license-key",
+                "return_origin": "https://3dprintsaver.com",
+                "return_path": "/subscription",
+            },
+            timeout=10,
+        )
+
+    def test_manage_subscription_requires_credentials(self):
+        plugin = LazarusPlugin()
+        plugin._settings = DummySettings({"engine_url": "https://3dprintsaver.com"})
+
+        with mock.patch("octoprint_lazarus.requests.post") as post:
+            result = plugin._manage_subscription({})
+
+        self.assertFalse(result["ok"])
+        self.assertIn("checkout email and license key", result["error"])
+        post.assert_not_called()
 
 
 if __name__ == "__main__":

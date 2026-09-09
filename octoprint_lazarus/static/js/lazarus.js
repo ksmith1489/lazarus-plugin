@@ -149,6 +149,10 @@ $(function () {
             window.open(getActivationUrl(), "_blank", "noopener,noreferrer");
         };
 
+        self.openSubscriptionPage = function () {
+            window.open(getNormalizedEngineUrl() + "/subscription", "_blank", "noopener,noreferrer");
+        };
+
         self.licenseDeviceSummary = ko.computed(function () {
             var count = self.licenseDeviceCount();
             var max = self.licenseMaxDevices() || 3;
@@ -1357,6 +1361,37 @@ $(function () {
                     self.licenseBusy(false);
                     self.licenseStatusText(getAjaxErrorMessage(xhr, "License key lookup failed."));
                     notify("License Key", getAjaxErrorMessage(xhr, "License key lookup failed."), "error");
+                });
+        };
+
+        self.manageSubscription = function () {
+            var email = $.trim(self.licenseEmail() || "");
+            var licenseKey = $.trim(self.licenseKey() || "");
+
+            if (!email || !licenseKey) {
+                notify("Subscription", "Enter the checkout email and license key first.", "notice");
+                return;
+            }
+
+            self.licenseBusy(true);
+            api("manage_subscription", {
+                email: email,
+                license_key: licenseKey
+            })
+                .done(function (resp) {
+                    self.licenseBusy(false);
+
+                    if (!resp || resp.ok !== true || !resp.portal_url) {
+                        notify("Subscription", resp && resp.error ? resp.error : "Subscription management failed.", "error");
+                        return;
+                    }
+
+                    window.open(resp.portal_url, "_blank", "noopener,noreferrer");
+                    notify("Subscription", "Stripe Billing Portal opened in a new tab.", "success");
+                })
+                .fail(function (xhr) {
+                    self.licenseBusy(false);
+                    notify("Subscription", getAjaxErrorMessage(xhr, "Subscription management failed."), "error");
                 });
         };
 

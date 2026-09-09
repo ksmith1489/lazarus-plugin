@@ -104,6 +104,7 @@ class LazarusPlugin(
             validate=[],
             activate_license=["email", "license_key"],
             recover_license_key=["email"],
+            manage_subscription=["email", "license_key"],
             deactivate_device=["email", "license_key"],
             set_control_mode=["control_mode"],
             test_moonraker=[],
@@ -235,6 +236,9 @@ class LazarusPlugin(
 
         if command == "recover_license_key":
             return self._recover_license_key(data)
+
+        if command == "manage_subscription":
+            return self._manage_subscription(data)
 
         if command == "deactivate_device":
             return self._deactivate_license_device(data)
@@ -1005,6 +1009,40 @@ class LazarusPlugin(
         )
         status.update(ok=True, license_key=license_key, activation_url=self._build_activation_url())
         return status
+
+    def _manage_subscription(self, data):
+        email = str(data.get("email") or self._settings.get(["license_email"]) or "").strip()
+        license_key = str(data.get("license_key") or self._settings.get(["license_key"]) or "").strip()
+
+        if not email or not license_key:
+            return dict(ok=False, error="Enter the checkout email and license key first.")
+
+        url = "{engine_url}/manage-subscription".format(engine_url=self._get_engine_url())
+        payload = dict(
+            email=email,
+            license_key=license_key,
+            return_origin="https://3dprintsaver.com",
+            return_path="/subscription",
+        )
+
+        try:
+            response = requests.post(url, json=payload, timeout=10)
+        except requests.exceptions.RequestException:
+            return dict(ok=False, error="Could not reach the license service. Check internet access and try again.")
+
+        if response.status_code != 200:
+            return dict(ok=False, error=self._license_request_error(response, "Subscription management failed."))
+
+        try:
+            response_payload = response.json()
+        except ValueError:
+            return dict(ok=False, error="License service returned an unreadable response.")
+
+        portal_url = str(response_payload.get("portal_url") or "").strip()
+        if response_payload.get("ok") is not True or not portal_url:
+            return dict(ok=False, error=response_payload.get("error") or "Subscription management failed.")
+
+        return dict(ok=True, portal_url=portal_url)
 
     def _deactivate_license_device(self, data):
         email = str(data.get("email") or self._settings.get(["license_email"]) or "").strip()
